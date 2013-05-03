@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HybridDSP.Net</name>
+    </assembly>
+    <members>
+        <member name="T:HybridDSP.Net.HTTP.HTTPMessage">
+            <summary>
+            HTTPMessage is the base class for HTTPServerRequest and
+            HTTPServerResponse. It reads, writes and manages all common
+            HTTP headers.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.#ctor">
+            <summary>
+            Construct a new HTTPMessage.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Add(System.String,System.String)">
+            <summary>
+            Add a header to the set of headers. This will fail if a header
+            with the same name exists.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <param name="value">Value of the header.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Has(System.String)">
+            <summary>
+            Check if the set of headers contains a particular header.
+            </summary>
+            <param name="name">Name of the header to check for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Get(System.String)">
+            <summary>
+            Get the value for a particular header.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <returns>The value for the header or an empty string if
+            it doesn't exist.</returns>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Set(System.String,System.String)">
+            <summary>
+            Set the value for a particular header. This will create the header
+            if it doesn;t exist yet.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <param name="value">Value of the header.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Read(System.IO.Stream)">
+            <summary>
+            Reads the headers from a Stream.
+            </summary>
+            <param name="istr"></param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPMessage.Write(System.IO.Stream)">
+            <summary>
+            Writes the headers to a Stream.
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.LastRead">
+            <summary>
+            Returns the last read character when an HTTP header has been read.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.Version">
+            <summary>
+            Sets or gets the HTTP protocol version.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.TransferEncoding">
+            <summary>
+            Gets or sets the transfer encoding
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.ChunkedTransferEncoding">
+            <summary>
+            Checks if the Transfer-Encoding is chunked or sets it to chunked or identity.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.ContentLength">
+            <summary>
+            Gets or sets the Content-Length header.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.ContentType">
+            <summary>
+            Gets or sets the Content-Type header.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPMessage.KeepAlive">
+            <summary>
+            Gets or sets the Connection header appropriate for the current
+            HTTP version.
+            </summary>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.HTTPServer">
+            <summary>
+            This class represents the actual HTTP server.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.#ctor(HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory,System.Net.Sockets.Socket)">
+            <summary>
+            Create an HTTPServer with default parameters.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="socket">The socket on which this server will listen for
+            connections. The socket must be bound to an endpoint prior to creating
+            the server.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.#ctor(HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory,System.Net.Sockets.Socket,HybridDSP.Net.HTTP.HTTPServerParams)">
+            <summary>
+            Create an HTTPServer.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="socket">The socket on which this server will listen for
+            connections. The socket must be bound to an endpoint prior to creating
+            the server.</param>
+            <param name="parameters">The parameters used for this server.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.#ctor(HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory,System.Int32)">
+            <summary>
+            Create an HTTPServer with default parameters.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="port">The port on which to listen for connections. The socket
+            will be created and bound to all interfaces by the HTTPServer</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.#ctor(HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory,System.Int32,HybridDSP.Net.HTTP.HTTPServerParams)">
+            <summary>
+            Create an HTTPServer.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="port">Port</param>
+            <param name="parameters">The parameters used for this server.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.#ctor(HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory,System.Net.IPEndPoint,HybridDSP.Net.HTTP.HTTPServerParams)">
+            <summary>
+            Create an HTTPServer.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="endPoint">End point</param>
+            <param name="parameters">The parameters used for this server.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.Start">
+            <summary>
+            Start the server (in a background thread).
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServer.Stop">
+            <summary>
+            Stop the server. Once a server is stopped it can not be
+            started again.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServer.Port">
+            <summary>
+            Gets the port on which the server is listening.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServer.IsRunning">
+            <summary>
+            Gets if the server is still running.
+            </summary>
+        </member>
+        <member name="E:HybridDSP.Net.HTTP.HTTPServer.OnServerStart">
+            <summary>
+            Invoked when the server is started.
+            </summary>
+        </member>
+        <member name="E:HybridDSP.Net.HTTP.HTTPServer.OnServerStop">
+            <summary>
+            Invoked just before the server stops.
+            </summary>
+        </member>
+        <member name="E:HybridDSP.Net.HTTP.HTTPServer.OnServerException">
+            <summary>
+            Invoked when the server catches an exception;
+            </summary>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.HTTPServerParams">
+            <summary>
+            The server parameters.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerParams.Default">
+            <summary>
+            The default server parameters.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerParams.Timeout">
+            <summary>
+            Gets or sets he timeout for the first request to be made after
+            a connection has been established.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerParams.KeepAliveTimeout">
+            <summary>
+            Gets or sets the timeout for subsequent request to be made after
+            the last request has been completed.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerParams.MaxRequests">
+            <summary>
+            Gets ot sets the maximum number of requests that are handled in
+            one session.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerParams.KeepAlive">
+            <summary>
+            Gets or sets the keep alive feature. If this property is false, a
+            session will close the connection after each completed request.
+            </summary>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.HTTPServerRequest">
+            <summary>
+            This class represents a request made by a client to the server.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerRequest.Read(System.IO.Stream)">
+            <summary>
+            Reads the request from a Stream.
+            </summary>
+            <param name="istr"></param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerRequest.GetRequestStream">
+            <summary>
+            Gets a Stream that represents the body of the request.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerRequest.Method">
+            <summary>
+            Gets the request method.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerRequest.URI">
+            <summary>
+            Gets the request URI.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerRequest.ExpectsContinue">
+            <summary>
+            Gets if the request expects a continue. If so, the session will handle this
+            internally.
+            </summary>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.HTTPServerResponse">
+            <summary>
+            This class represents the response from the server to the client.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.SendContinue">
+            <summary>
+            Send a continue reponse. This is used internally by the session.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.Send">
+            <summary>
+            Send the response header and get a stream to which the body can be written.
+            </summary>
+            <returns>The Stream for the body.</returns>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.SendFile(System.String,System.String)">
+            <summary>
+            Send the content of a file.
+            </summary>
+            <param name="path">The path to the file.</param>
+            <param name="mediaType">The Content-Type of the file.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.SendBuffer(System.Byte[],System.String)">
+            <summary>
+            Send the content of a buffer.
+            </summary>
+            <param name="buffer">The buffer.</param>
+            <param name="mediaType">The Content-Type of the buffer.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.Redirect(System.String)">
+            <summary>
+            Redirect the request.
+            </summary>
+            <param name="uri">The URI to redirect to.</param>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.HTTPServerResponse.Write(System.IO.Stream)">
+            <summary>
+            Write the response header to a Stream.
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerResponse.Status">
+            <summary>
+            Gets or sets the status of the response.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerResponse.Reason">
+            <summary>
+            Gets or sets the reason string of the response.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerResponse.StatusAndReason">
+            <summary>
+            Sets the status and the correct reason for it.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerResponse.Date">
+            <summary>
+            Gets or sets the date of the response.
+            </summary>
+        </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServerResponse.Sent">
+            <summary>
+            Get if the response header has been sent yet..
+            </summary>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.IHTTPRequestHandler">
+            <summary>
+            This interface defines the contract between the Server and the
+            Request Handlers.
+            </summary>
+        </member>
+        <member name="M:HybridDSP.Net.HTTP.IHTTPRequestHandler.HandleRequest(HybridDSP.Net.HTTP.HTTPServerRequest,HybridDSP.Net.HTTP.HTTPServerResponse)">
+            <summary>
+            Handles a request.
+            </summary>
+            <param name="request">The request to handle.</param>
+            <param name="response">The response to operate on.</param>
+        </member>
+        <member name="T:HybridDSP.Net.HTTP.IHTTPRequestHandlerFactory">
+            <summary>
+            This interface defines the contract between the server and the
+            RequestHandlerFactory. A different RequestHandler can be created
+            based on the the request.
+            </summary>
+        </member>
+    </members>
+</doc>

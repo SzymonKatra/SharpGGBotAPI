@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpGGBotAPI", "SharpGGBotAPI\SharpGGBotAPI.csproj", "{1A4C73F3-D07C-4CFE-939A-050B2C8B2094}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{D565A99E-DFAE-41A1-ADD3-2E657BC7F835}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A4C73F3-D07C-4CFE-939A-050B2C8B2094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A4C73F3-D07C-4CFE-939A-050B2C8B2094}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A4C73F3-D07C-4CFE-939A-050B2C8B2094}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A4C73F3-D07C-4CFE-939A-050B2C8B2094}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D565A99E-DFAE-41A1-ADD3-2E657BC7F835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D565A99E-DFAE-41A1-ADD3-2E657BC7F835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D565A99E-DFAE-41A1-ADD3-2E657BC7F835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D565A99E-DFAE-41A1-ADD3-2E657BC7F835}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
