@@ -159,6 +159,13 @@
             started again.
             </summary>
         </member>
+        <member name="P:HybridDSP.Net.HTTP.HTTPServer.IPFilter">
+            <summary>
+            Gets or sets IP filter.
+            If IP filter is null, then server accepts all requests.
+            Otherwise, accepts only IP's specified in this array.
+            </summary>
+        </member>
         <member name="P:HybridDSP.Net.HTTP.HTTPServer.Port">
             <summary>
             Gets the port on which the server is listening.

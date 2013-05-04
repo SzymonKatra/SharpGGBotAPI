@@ -11,33 +11,36 @@ using System.Xml.XPath;
 
 namespace SharpGGBotAPI
 {
-    internal class RequestHandler : IHTTPRequestHandlerFactory, IHTTPRequestHandler
-    {
-        private GaduGaduBot _owner;
-
-        internal GaduGaduBot Owner
-        {
-            get { return _owner; }
-            set { _owner = value; }
-        }
-
-        public RequestHandler(GaduGaduBot owner)
-        {
-            _owner = owner;
-        }
-
-        public IHTTPRequestHandler CreateRequestHandler(HTTPServerRequest request)
-        {
-            return this;
-        }
-        public void HandleRequest(HTTPServerRequest request, HTTPServerResponse response)
-        {
-            _owner.HandleRequest(request, response);
-        }
-    }
-
+    /// <summary>
+    /// Klasa która umożliwia obsługę GG Bot API.
+    /// </summary>
     public class GaduGaduBot
     {
+        private class RequestHandler : IHTTPRequestHandlerFactory, IHTTPRequestHandler
+        {
+            private GaduGaduBot _owner;
+
+            internal GaduGaduBot Owner
+            {
+                get { return _owner; }
+                set { _owner = value; }
+            }
+
+            public RequestHandler(GaduGaduBot owner)
+            {
+                _owner = owner;
+            }
+
+            public IHTTPRequestHandler CreateRequestHandler(HTTPServerRequest request)
+            {
+                return this;
+            }
+            public void HandleRequest(HTTPServerRequest request, HTTPServerResponse response)
+            {
+                _owner.HandleRequest(request, response);
+            }
+        }
+
         #region Properties
         private HTTPServer _server;
         private RequestHandler _factory;
@@ -48,58 +51,130 @@ namespace SharpGGBotAPI
         private bool _tokenNeedUpdate = true;
         private string _currentToken = string.Empty;
         private string _currentTokenServer = string.Empty;
-        private string _currentTokenServerPort = string.Empty;
+        private int _currentTokenServerPort = 80;
         private Queue<PushRequestItem> _pushRequestsQueue = new Queue<PushRequestItem>();
         private object _pushRequestsQueueLock = new object();
 
-        private const string _botmasterTokenServer = "https://botapi.gadu-gadu.pl/botmaster/getToken/";
+        private const string _botmasterTokenServer = "http://botapi.gadu-gadu.pl/botmaster/getToken/";
         private const string _botmasterSetStatus = "/setStatus/";
         private const string _botmasterSendMessage = "/sendMessage/";
         private const string _ourUserAgent = "SharpGGBotAPI";
 
+        /// <summary>
+        /// Ścieżka do pliku autoryzacyjnego.
+        /// </summary>
         public string AuthorizationFile
         {
             get { return _authorizationFile; }
             set { _authorizationFile = value; }
         }
+        /// <summary>
+        /// Numer GG bota.
+        /// Będzie używany do pobierania tokenu dla operacji PUSH oraz do ich wykonywania.
+        /// </summary>
         public uint BotUin
         {
             get { return uint.Parse(_botUin); }
             set { _botUin = value.ToString(); }
         }
+        /// <summary>
+        /// Login do Bot API dla danego numeru GG.
+        /// Będzie używany do pobierania tokenu dla operacji PUSH.
+        /// </summary>
         public string BotApiLogin
         {
             get { return _botApiCredentials.UserName; }
             set { _botApiCredentials.UserName = value; }
         }
+        /// <summary>
+        /// Hasło do Bot API dla danego numeru GG.
+        /// Będzie używany do pobierania tokenu dla operacji PUSH.
+        /// </summary>
         private string BotApiPassword
         {
             get { return _botApiCredentials.Password; }
             set { _botApiCredentials.Password = value; }
         }
+        /// <summary>
+        /// Kontekst synchronizujący.
+        /// </summary>
         public SynchronizationContext SyncContext
         {
             get { return _syncContext; }
             set { _syncContext = value; }
         }
+        /// <summary>
+        /// Czy serwer jest uruchomiony?
+        /// </summary>
         public bool IsRunning
         {
             get { return _server.IsRunning; }
         }
+        /// <summary>
+        /// Filtr IP. Proste zabezpieczenie przeciw nieporządanym zapytaniom.
+        /// Jeśli wynosi null, wszystkie zapytania zostaną przyjęte.
+        /// Jeśli nie wynosi null, serwer będzie przyjmował tylko te połączenia, które pochądzą z adresów IP zawartych na tej liście.
+        /// Standardowe adresy IP botmastera są we właściwości DefaultIPFilter
+        /// </summary>
+        public List<IPAddress> IPFilter
+        {
+            get { return _server.IPFilter; }
+            set { _server.IPFilter = value; }
+        }
+
+        /// <summary>
+        /// Domyślny filtr IP.
+        /// Zawiera adresy:
+        /// 91.197.15.34
+        /// </summary>
+        public List<IPAddress> DefaultIPFilter
+        {
+            get
+            {
+                List<IPAddress> filter = new List<IPAddress>();
+                filter.Add(IPAddress.Parse("91.197.15.34"));
+                return filter;
+            }
+        }
         #endregion
 
         #region Events
+        /// <summary>
+        /// Kiedy serwer wystartuje.
+        /// </summary>
         public event EventHandler Started;
+        /// <summary>
+        /// Kiedy serwer zatrzymano.
+        /// </summary>
         public event EventHandler Stopped;
+        /// <summary>
+        /// Kiedy odebrano wiadomość.
+        /// </summary>
         public event EventHandler<MessageEventArgs> MessageReceived;
+        /// <summary>
+        /// Kiedy wystąpił błąd przy operacji PUSH.
+        /// </summary>
         public event EventHandler<PushRequestErrorEventArgs> PushRequestErrorOccurred;
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Skonstruuj GaduGaduBot.
+        /// </summary>
+        /// <param name="botApiLogin">Login do Bot API</param>
+        /// <param name="botApiPassword">Hasło do Bot API</param>
+        /// <param name="botUin">Numer GG bota</param>
         public GaduGaduBot(string botApiLogin, string botApiPassword, uint botUin)
             : this(botApiLogin, botApiPassword, botUin, string.Empty)
         {
         }
+        /// <summary>
+        /// Skonstruuj GaduGaduBot.
+        /// </summary>
+        /// <param name="botApiLogin">Login do Bot API</param>
+        /// <param name="botApiPassword">Hasło do Bot API</param>
+        /// <param name="botUin">Numer GG bota</param>
+        /// <param name="authorizationFile">Plik autoryzacyjny.</param>
         public GaduGaduBot(string botApiLogin, string botApiPassword, uint botUin, string authorizationFile)
         {
             _botApiCredentials.UserName = botApiLogin;
@@ -111,7 +186,12 @@ namespace SharpGGBotAPI
 
         #region Methods
         #region Common
-        public void Start(int port)
+        /// <summary>
+        /// Wystartuj serwer bota.
+        /// </summary>
+        /// <param name="port">Port na którym ma działać bot.</param>
+        /// <param name="ipFilter">Filtr IP</param>
+        public void Start(int port, List<IPAddress> ipFilter = null)
         {
             if (_server != null && _server.IsRunning) throw new InvalidOperationException("Server was already running!");
 
@@ -120,8 +200,12 @@ namespace SharpGGBotAPI
             _server = new HTTPServer(_factory, port);
             _server.OnServerStart += _server_OnServerStart;
             _server.OnServerStop += _server_OnServerStop;
+            _server.IPFilter = ipFilter;
             _server.Start();
         }
+        /// <summary>
+        /// Zatrzymj serwer bota.
+        /// </summary>
         public void Stop()
         {
             try
@@ -133,6 +217,11 @@ namespace SharpGGBotAPI
             if (_server != null && _server.IsRunning) _server.Stop();         
         }
 
+        /// <summary>
+        /// Ustaw status bota.
+        /// </summary>
+        /// <param name="status">Status</param>
+        /// <param name="description">Opis</param>
         public void SetStatus(Status status, string description)
         {
             PushRequestItem item = new PushRequestItem();
@@ -140,15 +229,25 @@ namespace SharpGGBotAPI
             bool isDesc = !string.IsNullOrEmpty(description);
 
             string data = "status=" + Utils.ToInternalStatus(status, isDesc).ToString();
-            if (isDesc) data += "&desc=" + WebUtility.UrlEncode(description);
+            if (isDesc) data += "&desc=" + /*WebUtility.UrlEncode(description);*/ System.Web.HttpUtility.UrlEncode(description);
 
             item.Data = Encoding.UTF8.GetBytes(data);
             EnqueuePushRequest(item);
         }
+        /// <summary>
+        /// Wyślij wiadomość do wybranego numeru za pomocą zapytania PUSH.
+        /// </summary>
+        /// <param name="recipient">Numer GG odbiorcy</param>
+        /// <param name="message">Wiadomość</param>
         public void SendMessage(uint recipient, string message)
         {
             SendMessage(new uint[] { recipient }, message);
         }
+        /// <summary>
+        /// Wyślij wiadomość do wybranych numerów za pomocą zapytania PUSH.
+        /// </summary>
+        /// <param name="recipients">Numery GG odbiorców</param>
+        /// <param name="message">Wiadomość</param>
         public void SendMessage(uint[] recipients, string message)
         {
             PushRequestItem item = new PushRequestItem();
@@ -161,13 +260,18 @@ namespace SharpGGBotAPI
                 builderRecipients.Append(recipient.ToString());
                 builderRecipients.Append(',');
             }
-            builderRecipients.Remove(builderRecipients.Length - 1, 1); //wywalamy ostatni przecinek heheszki
+            builderRecipients.Remove(builderRecipients.Length - 1, 1); //wywalamy ostatni przecinek
 
-            string msg = "msg=" + WebUtility.UrlEncode(message);
+            string msg = "msg=" + /*WebUtility.UrlEncode(message);*/ System.Web.HttpUtility.UrlEncode(message);
 
             item.Data = Encoding.UTF8.GetBytes(builderRecipients.ToString() + '&' + msg);
             EnqueuePushRequest(item);
         }
+        /// <summary>
+        /// Wyślij wybrane wiadomości do wybranych numerów za pomocą zapytania PUSH.
+        /// W kluczu słownika muszą być zawarte numery GG odbiorców wiadomości zawartej w wartości słownika. 
+        /// </summary>
+        /// <param name="messageToRecipients">Słownik</param>
         public void SendMessage(Dictionary<uint[], string> messageToRecipients)
         {
             PushRequestItem item = new PushRequestItem();
@@ -184,7 +288,7 @@ namespace SharpGGBotAPI
                     builder.Append(',');
                 }
                 builder.Remove(builder.Length - 1, 1); //wywalamy ostatni przecinek
-                builder.Append(string.Format("&msg{0}={1}", id.ToString(), WebUtility.UrlEncode(keyValue.Value)));
+                builder.Append(string.Format("&msg{0}={1}", id.ToString(), /*WebUtility.UrlEncode(keyValue.Value)*/ System.Web.HttpUtility.UrlEncode(keyValue.Value)));
                 builder.Append('&');
                 ++id;
             }
@@ -195,9 +299,17 @@ namespace SharpGGBotAPI
         #endregion
 
         #region PacketProcessors
+        /// <summary>
+        /// Wyślij zapytanie o token.
+        /// </summary>
         protected void RequestToken()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_botmasterTokenServer + _botUin);
+            Uri requestUri = new Uri(_botmasterTokenServer + _botUin);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestUri);
+            //CredentialCache cache = new CredentialCache();
+            //cache.Add(requestUri, "Basic", _botApiCredentials);
+            //request.Credentials = cache;
+            //request.PreAuthenticate = true;
             //request.Credentials = _botApiCredentials;
             string auth = Convert.ToBase64String(Encoding.ASCII.GetBytes(_botApiCredentials.UserName + ":" + _botApiCredentials.Password));
             request.Headers.Add("Authorization", "Basic " + auth);
@@ -233,7 +345,7 @@ namespace SharpGGBotAPI
                 {
                     _currentToken = current.SelectSingleNode("token").Value;
                     _currentTokenServer = current.SelectSingleNode("server").Value;
-                    _currentTokenServerPort = current.SelectSingleNode("port").Value;
+                    _currentTokenServerPort = int.Parse(current.SelectSingleNode("port").Value);
                 }
                 bodyStream.Close();
                 response.Close();
@@ -246,48 +358,8 @@ namespace SharpGGBotAPI
             catch { OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 }); }
 
             DequeuePushRequest();
-        }
-        protected void ProcessErrorResponse(WebException e, string rootElement)
-        {
-            try
-            {
-                //WebException we = (WebException)e;
-                HttpWebResponse response = (HttpWebResponse)e.Response;
+        }    
 
-                //MemoryStream allMsg = new MemoryStream();
-                //byte[] buffer = new byte[256];
-                //int len = 0;
-                Stream bodyStream = response.GetResponseStream();
-                //while ((len = bodyStream.Read(buffer, 0, buffer.Length)) > 0)
-                //{
-                //    allMsg.Write(buffer, 0, len);
-                //}
-
-                PushRequestErrorEventArgs evArgs = new PushRequestErrorEventArgs();
-                evArgs.HttpErrorCode = response.StatusCode;
-
-                XPathDocument doc = new XPathDocument(bodyStream);
-                XPathNavigator docNavigator = doc.CreateNavigator();
-                XPathNodeIterator docIterator = docNavigator.Select("/" + rootElement);
-                foreach (XPathNavigator current in docIterator)
-                {
-                    try
-                    {
-                        evArgs.Message = current.SelectSingleNode("errorMsg").Value;
-                        evArgs.BotmasterErrorCode = int.Parse(current.SelectSingleNode("status").Value);
-                    }
-                    catch { }
-                }
-                bodyStream.Close();
-                response.Close();
-                OnPushRequestErrorOccurred(evArgs);
-            }
-            catch
-            {
-                //throw new Exception();
-                OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 });
-            }
-        }
         private void EnqueuePushRequest(PushRequestItem item)
         {
             lock (_pushRequestsQueueLock)
@@ -309,10 +381,11 @@ namespace SharpGGBotAPI
 
             _tokenNeedUpdate = true;
 
-            string uri = _currentTokenServer;
-            if (!(uri.StartsWith("https://") || uri.StartsWith("http://"))) uri = uri.Insert(0, "https://");
+            //string uri = _currentTokenServer;
+            //if (!(uri.StartsWith("https://") || uri.StartsWith("http://"))) uri = uri.Insert(0, "https://");
             //uri += ":" + _currentTokenServerPort;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri + item.Uri);
+            UriBuilder uriBuilder = new UriBuilder("http://", _currentTokenServer, 80, item.Uri);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = item.Data.Length;
@@ -374,6 +447,54 @@ namespace SharpGGBotAPI
             }
             if (requestNewToken) RequestToken();
         }
+
+        /// <summary>
+        /// Obsłuż błąd serwera.
+        /// </summary>
+        /// <param name="e">Wyjątek.</param>
+        /// <param name="rootElement">Główny element dokumentu XML.</param>
+        protected void ProcessErrorResponse(WebException e, string rootElement)
+        {
+            try
+            {
+                //WebException we = (WebException)e;
+                HttpWebResponse response = (HttpWebResponse)e.Response;
+
+                //MemoryStream allMsg = new MemoryStream();
+                //byte[] buffer = new byte[256];
+                //int len = 0;
+                Stream bodyStream = response.GetResponseStream();
+                //while ((len = bodyStream.Read(buffer, 0, buffer.Length)) > 0)
+                //{
+                //    allMsg.Write(buffer, 0, len);
+                //}
+
+                PushRequestErrorEventArgs evArgs = new PushRequestErrorEventArgs();
+                evArgs.HttpErrorCode = response.StatusCode;
+
+                XPathDocument doc = new XPathDocument(bodyStream);
+                XPathNavigator docNavigator = doc.CreateNavigator();
+                XPathNodeIterator docIterator = docNavigator.Select("/" + rootElement);
+                foreach (XPathNavigator current in docIterator)
+                {
+                    try
+                    {
+                        evArgs.Message = current.SelectSingleNode("errorMsg").Value;
+                        evArgs.BotmasterErrorCode = int.Parse(current.SelectSingleNode("status").Value);
+                    }
+                    catch { }
+                }
+                bodyStream.Close();
+                response.Close();
+                OnPushRequestErrorOccurred(evArgs);
+            }
+            catch
+            {
+                //throw new Exception();
+                OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 });
+            }
+        }
+
         internal void HandleRequest(HTTPServerRequest request, HTTPServerResponse response)
         {
             #region AuthorizationCheck
@@ -450,18 +571,32 @@ namespace SharpGGBotAPI
         #endregion
 
         #region EventPerformers
+        /// <summary>
+        /// Kiedy serwer wystartuje.
+        /// </summary>
         protected void OnStarted()
         {
             RaiseEvent(Started);
         }
+        /// <summary>
+        /// Kiedy serwer się zatrzyma
+        /// </summary>
         protected void OnStopped()
         {
             RaiseEvent(Stopped);
         }
+        /// <summary>
+        /// Kiedy zostanie przysłana wiadomość.
+        /// </summary>
+        /// <param name="e">Argumenty</param>
         protected void OnMessageReceived(MessageEventArgs e)
         {
             RaiseEvent<MessageEventArgs>(MessageReceived, e);
         }
+        /// <summary>
+        /// Kiedy zostanie wyrzucony błąd dotyczący zapytania PUSH.
+        /// </summary>
+        /// <param name="e">Argumenty</param>
         protected void OnPushRequestErrorOccurred(PushRequestErrorEventArgs e)
         {
             RaiseEvent<PushRequestErrorEventArgs>(PushRequestErrorOccurred, e);

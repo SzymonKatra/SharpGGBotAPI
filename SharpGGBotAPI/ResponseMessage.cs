@@ -8,6 +8,9 @@ using System.IO;
 
 namespace SharpGGBotAPI
 {
+    /// <summary>
+    /// Odpowiedź zwrotna na wiadomość przychodzącą.
+    /// </summary>
     public class ResponseMessage
     {
         private uint[] _recipients = null;
@@ -17,26 +20,41 @@ namespace SharpGGBotAPI
         private bool _sendToOffline = false;
         private HTTPServerResponse _httpResponse;
 
+        /// <summary>
+        /// Odbiorcy wiadomości.
+        /// </summary>
         public uint[] Recipients
         {
             get { return _recipients; }
             set { _recipients = value; }
         }
+        /// <summary>
+        /// Wiadomość zapisana czystym tekstem.
+        /// </summary>
         public string PlainMessage
         {
             get { return _plainMessage; }
             set { _plainMessage = value; }
         }
+        /// <summary>
+        /// Wiadomość zapisana w HTML.
+        /// </summary>
         public string HtmlMessage
         {
             get { return _htmlMessage; }
             set { _htmlMessage = value; }
         }
+        /// <summary>
+        /// Atrybuty wiadomości zapisanej czystym tekstem.
+        /// </summary>
         public byte[] Attributes
         {
             get { return _attributes; }
             set { _attributes = value; }
         }
+        /// <summary>
+        /// Czy wysyłać wiadomość do niedostępnych klientów?
+        /// </summary>
         public bool SendToOffline
         {
             get { return _sendToOffline; }
@@ -48,10 +66,16 @@ namespace SharpGGBotAPI
             set { _httpResponse = value; }
         }
 
+        /// <summary>
+        /// Tworzy wiadomość HTML z wiadomości zapisanej czystym tekstem.
+        /// </summary>
         public void MakeHtmlFromPlain()
         {
             _htmlMessage = string.Format("<span style=\"color:#000000; font-family:'MS Shell Dlg 2'; font-size:9pt; \">{0}</span>\0", _plainMessage);
         }
+        /// <summary>
+        /// Wyślij odpowiedź.
+        /// </summary>
         public void Send()
         {
             if (_httpResponse == null) throw new NullReferenceException("HTTP response was null!");
