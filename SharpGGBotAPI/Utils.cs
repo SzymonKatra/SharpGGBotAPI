@@ -6,9 +6,75 @@ using System.Threading.Tasks;
 
 namespace SharpGGBotAPI
 {
-    internal class Utils
+    /// <summary>
+    /// Narzędzia pomocnicze.
+    /// </summary>
+    public class Utils
     {
-        public static uint ToInternalStatus(Status status, bool description)
+        //SOURCE: http://www.sanity-free.com/12/crc32_implementation_in_csharp.html
+        private static class Crc32
+        {
+            private static uint[] table;
+
+            public static uint ComputeChecksum(byte[] bytes)
+            {
+                uint crc = 0xffffffff;
+                for (int i = 0; i < bytes.Length; ++i)
+                {
+                    byte index = (byte)(((crc) & 0xff) ^ bytes[i]);
+                    crc = (uint)((crc >> 8) ^ table[index]);
+                }
+                return ~crc;
+            }
+            public static byte[] ComputeChecksumBytes(byte[] bytes)
+            {
+                return BitConverter.GetBytes(ComputeChecksum(bytes));
+            }
+
+            static Crc32()
+            {
+                uint poly = 0xedb88320;
+                table = new uint[256];
+                uint temp = 0;
+                for (uint i = 0; i < table.Length; ++i)
+                {
+                    temp = i;
+                    for (int j = 8; j > 0; --j)
+                    {
+                        if ((temp & 1) == 1)
+                        {
+                            temp = (uint)((temp >> 1) ^ poly);
+                        }
+                        else
+                        {
+                            temp >>= 1;
+                        }
+                    }
+                    table[i] = temp;
+                }
+            }
+        }
+        /// <summary>
+        /// Oblicza sumę kontrolną CRC32 z podanych danych.
+        /// </summary>
+        /// <param name="data">Dane.</param>
+        /// <returns>Suma kontrolna CRC32.</returns>
+        public static long ComputeCrc32(byte[] data)
+        {
+            return Crc32.ComputeChecksum(data);
+        }
+        /// <summary>
+        /// Oblicz hash obrazka.
+        /// </summary>
+        /// <param name="crc32">Suma kontrolna CRC32.</param>
+        /// <param name="length">Wielkość obrazka w bajtach.</param>
+        /// <returns>Hash obrazka.</returns>
+        public static string ComputeHash(long crc32, long length)
+        {
+            return crc32.ToString("X8") + length.ToString("X8");
+        }
+
+        internal static uint ToInternalStatus(Status status, bool description)
         {
             switch (status)
             {
@@ -22,7 +88,7 @@ namespace SharpGGBotAPI
                 default: return Container.BOTAPI_STATUS_CURRENT;
             }
         }
-        public static Status ToPublicStatus(uint status, out bool description)
+        internal static Status ToPublicStatus(uint status, out bool description)
         {
             description = false;
             switch (status)

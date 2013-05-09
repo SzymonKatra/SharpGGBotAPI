@@ -20,5 +20,24 @@ namespace SharpGGBotAPI
         public const uint BOTAPI_STATUS_ADVERTISING = 32;
         public const uint BOTAPI_STATUS_DND = 33;
         public const uint BOTAPI_STATUS_DND_DESCR = 34;
+
+        public const string BOTAPI_BOTMASTER_MAIN_SERVER = "http://botapi.gadu-gadu.pl/botmaster";
+        public const string BOTAPI_BOTMASTER_RESOURCE_GET_TOKEN = "/getToken/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_SET_STATUS = "/setStatus/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_SEND_MESSAGE = "/sendMessage/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_PUT_IMAGE = "/putImage/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_EXISTS_IMAGE = "/existsImage/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_GET_IMAGE = "/getImage/";
+        public const string BOTAPI_REQUEST_USER_AGENT = "SharpGGBotAPI";
+
+        public const byte BOTAPI_ATTRIBUTES_FLAG = 0x02;
+        public const byte BOTAPI_ATTRIBUTES_BOLD = 0x01;
+        public const byte BOTAPI_ATTRIBUTES_ITALIC = 0x02;
+        public const byte BOTAPI_ATTRIBUTES_UNDERLINE = 0x04;
+        public const byte BOTAPI_ATTRIBUTES_COLOR = 0x08;
+        public const byte BOTAPI_ATTRIBUTES_IMAGE = 0x80;
+
+        public const byte BOTAPI_IMAGE_CONST_FIRST = 0x09;
+        public const byte BOTAPI_IMAGE_CONST_LAST = 0x01;
     }
 }

@@ -12,6 +12,12 @@ using System.Xml.XPath;
 namespace SharpGGBotAPI
 {
     /// <summary>
+    /// Delegat który obsługuje asynchroniczne odpowiedzi na zapytania PUSH.
+    /// </summary>
+    /// <param name="e">Argumenty - odpowiedź.</param>
+    public delegate void PushRequestResultAsync(PushRequestResultAsyncEventArgs e);
+
+    /// <summary>
     /// Klasa która umożliwia obsługę GG Bot API.
     /// </summary>
     public class GaduGaduBot
@@ -41,24 +47,20 @@ namespace SharpGGBotAPI
             }
         }
 
+        //TODO: full images support
         #region Properties
         private HTTPServer _server;
         private RequestHandler _factory;
         private string _authorizationFile = string.Empty;
         private string _botUin = string.Empty;
         private System.Net.NetworkCredential _botApiCredentials = new System.Net.NetworkCredential();
-        private SynchronizationContext _syncContext = null;
         private bool _tokenNeedUpdate = true;
         private string _currentToken = string.Empty;
         private string _currentTokenServer = string.Empty;
         private int _currentTokenServerPort = 80;
+        private PushRequestResultEventArgs _currentPushResponse = null;
         private Queue<PushRequestItem> _pushRequestsQueue = new Queue<PushRequestItem>();
         private object _pushRequestsQueueLock = new object();
-
-        private const string _botmasterTokenServer = "http://botapi.gadu-gadu.pl/botmaster/getToken/";
-        private const string _botmasterSetStatus = "/setStatus/";
-        private const string _botmasterSendMessage = "/sendMessage/";
-        private const string _ourUserAgent = "SharpGGBotAPI";
 
         /// <summary>
         /// Ścieżka do pliku autoryzacyjnego.
@@ -96,14 +98,6 @@ namespace SharpGGBotAPI
             set { _botApiCredentials.Password = value; }
         }
         /// <summary>
-        /// Kontekst synchronizujący.
-        /// </summary>
-        public SynchronizationContext SyncContext
-        {
-            get { return _syncContext; }
-            set { _syncContext = value; }
-        }
-        /// <summary>
         /// Czy serwer jest uruchomiony?
         /// </summary>
         public bool IsRunning
@@ -114,7 +108,7 @@ namespace SharpGGBotAPI
         /// Filtr IP. Proste zabezpieczenie przeciw nieporządanym zapytaniom.
         /// Jeśli wynosi null, wszystkie zapytania zostaną przyjęte.
         /// Jeśli nie wynosi null, serwer będzie przyjmował tylko te połączenia, które pochądzą z adresów IP zawartych na tej liście.
-        /// Standardowe adresy IP botmastera są we właściwości DefaultIPFilter
+        /// Standardowe adresy IP botmastera są we właściwości DefaultIPFilter.
         /// </summary>
         public List<IPAddress> IPFilter
         {
@@ -152,9 +146,9 @@ namespace SharpGGBotAPI
         /// </summary>
         public event EventHandler<MessageEventArgs> MessageReceived;
         /// <summary>
-        /// Kiedy wystąpił błąd przy operacji PUSH.
+        /// Kiedy wystąpił błąd przy pobieraniu tokena.
         /// </summary>
-        public event EventHandler<PushRequestErrorEventArgs> PushRequestErrorOccurred;
+        public event EventHandler TokenRequestErrorOccurred;
         #endregion
 
         #region Constructors
@@ -217,94 +211,141 @@ namespace SharpGGBotAPI
             if (_server != null && _server.IsRunning) _server.Stop();         
         }
 
+        #region SetStatus
+        #region Sync
         /// <summary>
         /// Ustaw status bota.
         /// </summary>
         /// <param name="status">Status</param>
         /// <param name="description">Opis</param>
-        public void SetStatus(Status status, string description)
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs SetStatus(Status status, string description)
         {
-            PushRequestItem item = new PushRequestItem();
-            item.Uri = _botmasterSetStatus + _botUin;
-            bool isDesc = !string.IsNullOrEmpty(description);
-
-            string data = "status=" + Utils.ToInternalStatus(status, isDesc).ToString();
-            if (isDesc) data += "&desc=" + /*WebUtility.UrlEncode(description);*/ System.Web.HttpUtility.UrlEncode(description);
-
-            item.Data = Encoding.UTF8.GetBytes(data);
-            EnqueuePushRequest(item);
+            ManualResetEvent locker = new ManualResetEvent(false);
+            ProcessSetStatus(status, description, locker, null, null);
+            locker.WaitOne();
+            locker.Close();
+            return _currentPushResponse;
         }
+        #endregion
+        #region Async
+        /// <summary>
+        /// Ustaw status bota asynchronicznie.
+        /// </summary>
+        /// <param name="status">Status</param>
+        /// <param name="description">Opis</param>
+        /// <param name="callback">Metoda zwrotna.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        public void SetStatusAsync(Status status, string description, PushRequestResultAsync callback, object userData = null)
+        {
+            ProcessSetStatus(status, description, null, callback, userData);
+        }
+        #endregion
+        #endregion
+
+        #region SendMessage
+        #region Sync
         /// <summary>
         /// Wyślij wiadomość do wybranego numeru za pomocą zapytania PUSH.
         /// </summary>
         /// <param name="recipient">Numer GG odbiorcy</param>
         /// <param name="message">Wiadomość</param>
-        public void SendMessage(uint recipient, string message)
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs SendMessage(uint recipient, string message)
         {
-            SendMessage(new uint[] { recipient }, message);
+            return SendMessage(new uint[] { recipient }, message);
         }
         /// <summary>
         /// Wyślij wiadomość do wybranych numerów za pomocą zapytania PUSH.
         /// </summary>
         /// <param name="recipients">Numery GG odbiorców</param>
         /// <param name="message">Wiadomość</param>
-        public void SendMessage(uint[] recipients, string message)
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs SendMessage(uint[] recipients, string message)
         {
-            PushRequestItem item = new PushRequestItem();
-            item.Uri = _botmasterSendMessage + _botUin;
-
-            StringBuilder builderRecipients = new StringBuilder();
-            builderRecipients.Append("to=");
-            foreach (uint recipient in recipients)
-            {
-                builderRecipients.Append(recipient.ToString());
-                builderRecipients.Append(',');
-            }
-            builderRecipients.Remove(builderRecipients.Length - 1, 1); //wywalamy ostatni przecinek
-
-            string msg = "msg=" + /*WebUtility.UrlEncode(message);*/ System.Web.HttpUtility.UrlEncode(message);
-
-            item.Data = Encoding.UTF8.GetBytes(builderRecipients.ToString() + '&' + msg);
-            EnqueuePushRequest(item);
+            ManualResetEvent locker = new ManualResetEvent(false);
+            ProcessSendMessage(recipients, message, locker, null, null);
+            locker.WaitOne();
+            locker.Close();
+            return _currentPushResponse;
         }
         /// <summary>
         /// Wyślij wybrane wiadomości do wybranych numerów za pomocą zapytania PUSH.
         /// W kluczu słownika muszą być zawarte numery GG odbiorców wiadomości zawartej w wartości słownika. 
         /// </summary>
         /// <param name="messageToRecipients">Słownik</param>
-        public void SendMessage(Dictionary<uint[], string> messageToRecipients)
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs SendMessage(Dictionary<uint[], string> messageToRecipients)
         {
-            PushRequestItem item = new PushRequestItem();
-            item.Uri = _botmasterSendMessage + _botUin;
-
-            int id = 1;
-            StringBuilder builder = new StringBuilder();
-            foreach (var keyValue in messageToRecipients)
-            {
-                builder.Append(string.Format("to{0}=", id.ToString()));
-                foreach (uint recipient in keyValue.Key)
-                {
-                    builder.Append(recipient.ToString());
-                    builder.Append(',');
-                }
-                builder.Remove(builder.Length - 1, 1); //wywalamy ostatni przecinek
-                builder.Append(string.Format("&msg{0}={1}", id.ToString(), /*WebUtility.UrlEncode(keyValue.Value)*/ System.Web.HttpUtility.UrlEncode(keyValue.Value)));
-                builder.Append('&');
-                ++id;
-            }
-            builder.Remove(builder.Length - 1, 1); //wywalamy ostatnie to coś &
-            item.Data = Encoding.UTF8.GetBytes(builder.ToString());
-            EnqueuePushRequest(item);
+            ManualResetEvent locker = new ManualResetEvent(false);
+            ProcessSendMessage(messageToRecipients, locker, null, null);
+            locker.WaitOne();
+            locker.Close();
+            return _currentPushResponse;
         }
+        #endregion
+        #region Async
+        /// <summary>
+        /// Wyślij wiadomość do wybranego numeru za pomocą zapytania PUSH asynchronicznie.
+        /// </summary>
+        /// <param name="recipient">Numer GG odbiorcy</param>
+        /// <param name="message">Wiadomość</param>
+        /// <param name="callback">Metoda zwrotna.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        public void SendMessageAsync(uint recipient, string message, PushRequestResultAsync callback, object userData = null)
+        {
+            SendMessageAsync(new uint[] { recipient }, message, callback, userData);
+        }
+        /// <summary>
+        /// Wyślij wiadomość do wybranych numerów za pomocą zapytania PUSH asynchronicznie.
+        /// </summary>
+        /// <param name="recipients">Numery GG odbiorców</param>
+        /// <param name="message">Wiadomość</param>
+        /// <param name="callback">Metoda zwrotna.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        public void SendMessageAsync(uint[] recipients, string message, PushRequestResultAsync callback, object userData = null)
+        {
+            ProcessSendMessage(recipients, message, null, callback, userData);
+        }
+        /// <summary>
+        /// Wyślij wybrane wiadomości do wybranych numerów za pomocą zapytania PUSH asynchronicznie.
+        /// W kluczu słownika muszą być zawarte numery GG odbiorców wiadomości zawartej w wartości słownika. 
+        /// </summary>
+        /// <param name="messageToRecipients">Słownik</param>
+        /// <param name="callback">Metoda zwrotna.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        public void SendMessageAsync(Dictionary<uint[], string> messageToRecipients, PushRequestResultAsync callback, object userData = null)
+        {
+            ProcessSendMessage(messageToRecipients, null, callback, userData);
+        }
+        #endregion
+        #endregion
+
+        #region SendImage
+        #region Sync
+        /// <summary>
+        /// Wyślij obrazek na serwer.
+        /// </summary>
+        /// <param name="imageData">Dane obrazka.</param>
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs SendImage(byte[] imageData)
+        {
+            ManualResetEvent locker = new ManualResetEvent(false);
+            ProcessSendImage(imageData, locker, null, null);
+            locker.WaitOne();
+            locker.Close();
+            return _currentPushResponse;
+        }
+        #endregion
+        #region Async
+        #endregion
+        #endregion
         #endregion
 
         #region PacketProcessors
-        /// <summary>
-        /// Wyślij zapytanie o token.
-        /// </summary>
-        protected void RequestToken()
+        private void RequestToken()
         {
-            Uri requestUri = new Uri(_botmasterTokenServer + _botUin);
+            Uri requestUri = new Uri(Container.BOTAPI_BOTMASTER_MAIN_SERVER + Container.BOTAPI_BOTMASTER_RESOURCE_GET_TOKEN + _botUin);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(requestUri);
             //CredentialCache cache = new CredentialCache();
             //cache.Add(requestUri, "Basic", _botApiCredentials);
@@ -314,7 +355,7 @@ namespace SharpGGBotAPI
             string auth = Convert.ToBase64String(Encoding.ASCII.GetBytes(_botApiCredentials.UserName + ":" + _botApiCredentials.Password));
             request.Headers.Add("Authorization", "Basic " + auth);
             request.Method = "GET";
-            request.UserAgent = _ourUserAgent;
+            request.UserAgent = Container.BOTAPI_REQUEST_USER_AGENT;
             try
             {
                 request.BeginGetResponse(new AsyncCallback(OnRequestTokenCallback), request);
@@ -351,11 +392,12 @@ namespace SharpGGBotAPI
                 response.Close();
                 _tokenNeedUpdate = false;
             }
-            catch (WebException e)
-            {
-                ProcessErrorResponse(e, "botmaster");
-            }
-            catch { OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 }); }
+            catch { }
+            //catch (WebException e)
+            //{
+            //    //ProcessErrorResponse(e, "botmaster");
+            //}
+            //catch { OnTokenRequestErrorOccurred(new PushRequestResultEventArgs() { BotmasterMessage = "Nieznany błąd", BotmasterErrorCode = PushErrorCode.Unknown }); }
 
             DequeuePushRequest();
         }    
@@ -384,19 +426,20 @@ namespace SharpGGBotAPI
             //string uri = _currentTokenServer;
             //if (!(uri.StartsWith("https://") || uri.StartsWith("http://"))) uri = uri.Insert(0, "https://");
             //uri += ":" + _currentTokenServerPort;
-            UriBuilder uriBuilder = new UriBuilder("http://", _currentTokenServer, 80, item.Uri);
+            UriBuilder uriBuilder = new UriBuilder((item.UseMainServer ? Container.BOTAPI_BOTMASTER_MAIN_SERVER : "http://" + _currentTokenServer) + item.Uri);
+            //UriBuilder uriBuilder = new UriBuilder("http://", _currentTokenServer, 80, item.Uri);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uriBuilder.Uri);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = item.Data.Length;
-            request.UserAgent = _ourUserAgent;
+            request.UserAgent = Container.BOTAPI_REQUEST_USER_AGENT;
             request.Headers.Add("Token", _currentToken);
             object[] pack = new object[] { request, item };
             request.BeginGetRequestStream(new AsyncCallback(OnPushStreamCallback), pack);
         }
         private void OnPushStreamCallback(IAsyncResult ar)
         {
-            bool exc = false;
+            //bool exc = false;
             try
             {
                 object[] pack = (object[])ar.AsyncState;
@@ -405,41 +448,83 @@ namespace SharpGGBotAPI
                 Stream bodyStream = request.EndGetRequestStream(ar);
                 bodyStream.Write(item.Data, 0, item.Data.Length);
                 bodyStream.Close();
-                request.BeginGetResponse(new AsyncCallback(OnPushResponseCallback), request);
+                request.BeginGetResponse(new AsyncCallback(OnPushResponseCallback), pack);
             }
-            catch (WebException e)
-            {
-                ProcessErrorResponse(e, "result");
-                exc = true;
-            }
-            catch
-            {
-                OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 });
-                exc = true;
-            }
-            if (exc)
-            {
-                bool requestNewToken = false;
-                lock (_pushRequestsQueueLock)
-                {
-                    if (_pushRequestsQueue.Count > 0) requestNewToken = true;
-                }
-                if (requestNewToken) RequestToken();
-            }
+            catch { OnPushResponseCallback(null); }
+            //catch (WebException e)
+            //{
+            //    ProcessErrorResponse(e, "result");
+            //    exc = true;
+            //}
+            //catch
+            //{
+            //    OnTokenRequestErrorOccurred(new PushRequestResultEventArgs() { BotmasterMessage = "Nieznany błąd", BotmasterErrorCode = PushErrorCode.Unknown });
+            //    exc = true;
+            //}
+            //if (exc)
+            //{
+            //    bool requestNewToken = false;
+            //    lock (_pushRequestsQueueLock)
+            //    {
+            //        if (_pushRequestsQueue.Count > 0) requestNewToken = true;
+            //    }
+            //    if (requestNewToken) RequestToken();
+            //}
         }
         private void OnPushResponseCallback(IAsyncResult ar)
         {
+            PushRequestResultEventArgs evArgs = new PushRequestResultEventArgs();
+            PushRequestItem item = null;
             try
             {
-                HttpWebRequest request = (HttpWebRequest)ar.AsyncState;
+                object[] pack = (object[])ar.AsyncState;
+                HttpWebRequest request = (HttpWebRequest)pack[0];
+                item = (PushRequestItem)pack[1];
+
+                evArgs.OperationType = item.OperationType;
+
                 HttpWebResponse response = (HttpWebResponse)request.EndGetResponse(ar);
+
+                evArgs.HttpErrorCode = response.StatusCode;
+                //TODO: parse PUSH response if required
+                Stream bodyStream = response.GetResponseStream();
+                switch (item.OperationType)
+                {
+                    case PushOperation.ImageSend:
+                        XPathDocument doc = new XPathDocument(bodyStream);
+                        XPathNavigator docNavigator = doc.CreateNavigator();
+                        XPathNodeIterator docIterator = docNavigator.Select("/result");
+                        foreach (XPathNavigator current in docIterator)
+                        {
+                            try
+                            {
+                                evArgs.ImageHash = current.SelectSingleNode("hash").Value;
+                                evArgs.BotmasterErrorCode = (PushErrorCode)int.Parse(current.SelectSingleNode("status").Value);
+                            }
+                            catch { }
+                        }
+                        break;
+                }
+                bodyStream.Close();
                 response.Close();
             }
             catch (WebException e)
             {
-                ProcessErrorResponse(e, "result");
+                ProcessErrorResponse(e, "result", evArgs);
             }
-            catch { OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 }); }
+            catch { evArgs.BotmasterMessage = "Nieznany błąd"; evArgs.BotmasterErrorCode = PushErrorCode.Unknown; }
+            if (item != null)
+            {
+                if (item.Callback == null) //synchronized
+                {
+                    _currentPushResponse = evArgs;
+                    item.Locker.Set();
+                }
+                else //async
+                {
+                    item.Callback(new PushRequestResultAsyncEventArgs(evArgs) { UserData = item.UserData });
+                }
+            }
             bool requestNewToken = false;
             lock (_pushRequestsQueueLock)
             {
@@ -453,7 +538,8 @@ namespace SharpGGBotAPI
         /// </summary>
         /// <param name="e">Wyjątek.</param>
         /// <param name="rootElement">Główny element dokumentu XML.</param>
-        protected void ProcessErrorResponse(WebException e, string rootElement)
+        /// <param name="evArgs">Wynik.</param>
+        protected void ProcessErrorResponse(WebException e, string rootElement, PushRequestResultEventArgs evArgs)
         {
             try
             {
@@ -469,7 +555,7 @@ namespace SharpGGBotAPI
                 //    allMsg.Write(buffer, 0, len);
                 //}
 
-                PushRequestErrorEventArgs evArgs = new PushRequestErrorEventArgs();
+                //PushRequestResultEventArgs evArgs = new PushRequestResultEventArgs();
                 evArgs.HttpErrorCode = response.StatusCode;
 
                 XPathDocument doc = new XPathDocument(bodyStream);
@@ -479,20 +565,148 @@ namespace SharpGGBotAPI
                 {
                     try
                     {
-                        evArgs.Message = current.SelectSingleNode("errorMsg").Value;
-                        evArgs.BotmasterErrorCode = int.Parse(current.SelectSingleNode("status").Value);
+                        evArgs.BotmasterMessage = current.SelectSingleNode("errorMsg").Value;
+                        evArgs.BotmasterErrorCode = (PushErrorCode)int.Parse(current.SelectSingleNode("status").Value);
                     }
                     catch { }
                 }
                 bodyStream.Close();
                 response.Close();
-                OnPushRequestErrorOccurred(evArgs);
+                //OnTokenRequestErrorOccurred(evArgs);
             }
             catch
             {
                 //throw new Exception();
-                OnPushRequestErrorOccurred(new PushRequestErrorEventArgs() { Message = "Nieznany błąd", BotmasterErrorCode = -1 });
+                evArgs.BotmasterMessage = "Nieznany błąd.";
+                evArgs.BotmasterErrorCode = PushErrorCode.Unknown;
+                //OnTokenRequestErrorOccurred(new PushRequestResultEventArgs() { BotmasterMessage = "Nieznany błąd", BotmasterErrorCode = PushErrorCode.Unknown });
             }
+        }
+
+        /// <summary>
+        /// Obsłuż zapytanie o zmianę statusu.
+        /// </summary>
+        /// <param name="status">Status</param>
+        /// <param name="description">Opis</param>
+        /// <param name="locker">Blokada dla operacji synchronicznej.</param>
+        /// <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        protected void ProcessSetStatus(Status status, string description, ManualResetEvent locker, PushRequestResultAsync callback, object userData)
+        {
+            PushRequestItem item = new PushRequestItem();
+            item.Uri = Container.BOTAPI_BOTMASTER_RESOURCE_SET_STATUS + _botUin;
+            bool isDesc = !string.IsNullOrEmpty(description);
+
+            string data = "status=" + Utils.ToInternalStatus(status, isDesc).ToString();
+            if (isDesc) data += "&desc=" + /*WebUtility.UrlEncode(description);*/ System.Web.HttpUtility.UrlEncode(description);
+
+            item.Data = Encoding.UTF8.GetBytes(data);
+            item.OperationType = PushOperation.SetStatus;
+            item.Locker = locker;
+            item.Callback = callback;
+            item.UserData = userData;
+
+            EnqueuePushRequest(item);
+        }
+        /// <summary>
+        /// Obsłuż zapytanie o wysłanie wiadomości.
+        /// </summary>
+        /// <param name="recipients">Odbiorcy.</param>
+        /// <param name="message">Wiadomość</param>
+        /// <param name="locker">Blokada dla operacji synchronicznej.</param>
+        /// <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        protected void ProcessSendMessage(uint[] recipients, string message, ManualResetEvent locker, PushRequestResultAsync callback, object userData)
+        {
+            PushRequestItem item = new PushRequestItem();
+            item.Uri = Container.BOTAPI_BOTMASTER_RESOURCE_SEND_MESSAGE + _botUin;
+
+            StringBuilder builderRecipients = new StringBuilder();
+            builderRecipients.Append("to=");
+            foreach (uint recipient in recipients)
+            {
+                builderRecipients.Append(recipient.ToString());
+                builderRecipients.Append(',');
+            }
+            builderRecipients.Remove(builderRecipients.Length - 1, 1); //wywalamy ostatni przecinek
+
+            string msg = "msg=" + /*WebUtility.UrlEncode(message);*/ System.Web.HttpUtility.UrlEncode(message);
+
+            item.Data = Encoding.UTF8.GetBytes(builderRecipients.ToString() + '&' + msg);
+            item.OperationType = PushOperation.SendMessage;
+            item.Locker = locker;
+            item.Callback = callback;
+            item.UserData = userData;
+
+            EnqueuePushRequest(item);
+        }
+        /// <summary>
+        /// Obsłuż zapytanie o wysłanie wiadomości.
+        /// </summary>
+        /// <param name="messageToRecipients">Słownik</param>
+        /// <param name="locker">Blokada dla operacji synchronicznej.</param>
+        /// <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        protected void ProcessSendMessage(Dictionary<uint[], string> messageToRecipients, ManualResetEvent locker, PushRequestResultAsync callback, object userData)
+        {
+            PushRequestItem item = new PushRequestItem();
+            item.Uri = Container.BOTAPI_BOTMASTER_RESOURCE_SEND_MESSAGE + _botUin;
+
+            int id = 1;
+            StringBuilder builder = new StringBuilder();
+            foreach (var keyValue in messageToRecipients)
+            {
+                builder.Append(string.Format("to{0}=", id.ToString()));
+                foreach (uint recipient in keyValue.Key)
+                {
+                    builder.Append(recipient.ToString());
+                    builder.Append(',');
+                }
+                builder.Remove(builder.Length - 1, 1); //wywalamy ostatni przecinek
+                builder.Append(string.Format("&msg{0}={1}", id.ToString(), /*WebUtility.UrlEncode(keyValue.Value)*/ System.Web.HttpUtility.UrlEncode(keyValue.Value)));
+                builder.Append('&');
+                ++id;
+            }
+            builder.Remove(builder.Length - 1, 1); //wywalamy ostatnie to coś &
+
+            item.Data = Encoding.UTF8.GetBytes(builder.ToString());
+            item.OperationType = PushOperation.SendMessage;
+            item.Locker = locker;
+            item.Callback = callback;
+            item.UserData = userData;
+
+            EnqueuePushRequest(item);
+        }
+        /// <summary>
+        /// Obsłuż zapytanie o wysłanie obrazka.
+        /// </summary>
+        /// <param name="imageData">Dane obrazka.</param>
+        /// <param name="locker">Blokada dla operacji synchronicznej.</param>
+        /// <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        protected void ProcessSendImage(byte[] imageData, ManualResetEvent locker, PushRequestResultAsync callback, object userData)
+        {
+            PushRequestItem item = new PushRequestItem();
+            item.Uri = Container.BOTAPI_BOTMASTER_RESOURCE_PUT_IMAGE + _botUin;
+
+            using (MemoryStream memStream = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(memStream))
+                {
+                    byte[] hash = Encoding.ASCII.GetBytes(Utils.ComputeHash(Utils.ComputeCrc32(imageData), imageData.Length));
+                    writer.Write(hash);
+                    writer.Write(imageData);
+                }
+                item.Data = memStream.ToArray();
+            }
+            //item.Data = imageData;
+            item.Locker = locker;
+            item.Callback = callback;
+            item.UserData = userData;
+            item.OperationType = PushOperation.ImageSend;
+            item.UseMainServer = true;
+
+            EnqueuePushRequest(item);
         }
 
         internal void HandleRequest(HTTPServerRequest request, HTTPServerResponse response)
@@ -546,6 +760,7 @@ namespace SharpGGBotAPI
                 Stream bodyStream = request.GetRequestStream();
                 byte[] data = new byte[request.ContentLength];
                 bodyStream.Read(data, 0, (int)request.ContentLength);
+                bodyStream.Close();
 
                 evArgs.Message = Encoding.UTF8.GetString(data);
                 ResponseMessage responseMsg = new ResponseMessage();
@@ -576,14 +791,14 @@ namespace SharpGGBotAPI
         /// </summary>
         protected void OnStarted()
         {
-            RaiseEvent(Started);
+            if (Started != null) Started(this, EventArgs.Empty);
         }
         /// <summary>
         /// Kiedy serwer się zatrzyma
         /// </summary>
         protected void OnStopped()
         {
-            RaiseEvent(Stopped);
+            if (Stopped != null) Stopped(this, EventArgs.Empty);
         }
         /// <summary>
         /// Kiedy zostanie przysłana wiadomość.
@@ -591,49 +806,14 @@ namespace SharpGGBotAPI
         /// <param name="e">Argumenty</param>
         protected void OnMessageReceived(MessageEventArgs e)
         {
-            RaiseEvent<MessageEventArgs>(MessageReceived, e);
+            if (MessageReceived != null) MessageReceived(this, e);
         }
         /// <summary>
-        /// Kiedy zostanie wyrzucony błąd dotyczący zapytania PUSH.
+        /// Kiedy zostanie wyrzucony błąd zapytania o token.
         /// </summary>
-        /// <param name="e">Argumenty</param>
-        protected void OnPushRequestErrorOccurred(PushRequestErrorEventArgs e)
+        protected void OnTokenRequestErrorOccurred()
         {
-            RaiseEvent<PushRequestErrorEventArgs>(PushRequestErrorOccurred, e);
-        }
-
-        /// <summary>
-        /// Synchronizuje zdarzenia wywoływane na różnych wątkach.
-        /// </summary>
-        /// <param name="handler">Zdarzenie</param>
-        protected void RaiseEvent(EventHandler handler)
-        {
-            RaiseEvent(handler, EventArgs.Empty);
-        }
-        /// <summary>
-        /// Synchronizuje zdarzenia wywoływane na różnych wątkach.
-        /// </summary>
-        /// <param name="handler">Zdarzenie</param>
-        /// <param name="e">Argumenty</param>
-        protected void RaiseEvent(EventHandler handler, EventArgs e)
-        {
-            if (handler == null) return;
-            if (_syncContext != null)
-                _syncContext.Post(new SendOrPostCallback((state) => { handler(this, e); }), null);
-            else handler(this, e);
-        }
-        /// <summary>
-        /// Synchronizuje zdarzenia wywoływane na różnych wątkach.
-        /// </summary>
-        /// <typeparam name="T">Typ argumentów</typeparam>
-        /// <param name="handler">Zdarzenie</param>
-        /// <param name="e">Argumenty</param>
-        protected void RaiseEvent<T>(EventHandler<T> handler, T e) where T : EventArgs
-        {
-            if (handler == null) return;
-            if (_syncContext != null)
-                _syncContext.Post(new SendOrPostCallback((state) => { handler(this, e); }), null);
-            else handler(this, e);
+            if (TokenRequestErrorOccurred != null) TokenRequestErrorOccurred(this, EventArgs.Empty);
         }
         #endregion
         #endregion
