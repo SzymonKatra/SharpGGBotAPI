@@ -1,0 +1,667 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SharpGGBotAPI</name>
+    </assembly>
+    <members>
+        <member name="T:SharpGGBotAPI.Status">
+            <summary>
+            Dostępne statusy GG.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.None">
+            <summary>
+            Brak. Oznacza zostawienie takiego samego statusu.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.Available">
+            <summary>
+            Dostępny.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.Busy">
+            <summary>
+            Zaraz wracam.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.Invisible">
+            <summary>
+            Niewidoczny.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.DoNotDisturb">
+            <summary>
+            Nie przeszkadzać.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.FreeForCall">
+            <summary>
+            PoGGadaj ze mną.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.Status.Advertising">
+            <summary>
+            Reklamowy.
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.PushOperation">
+            <summary>
+            Rodzaje operacji PUSH.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.None">
+            <summary>Brak.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.SetStatus">
+            <summary>Zmiana statusu.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.SendMessage">
+            <summary>Wysłanie wiadomości.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.ImageSend">
+            <summary>Wysłanie obrazka na serwer.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.ImageExists">
+            <summary>Sprawdzenie czy obrazek istnieje na serwerze.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushOperation.ImageDownload">
+            <summary>Pobranie obrazka z serwera.</summary>
+        </member>
+        <member name="T:SharpGGBotAPI.PushErrorCode">
+            <summary>
+            Kody błędów wiadomości PUSH.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.Unknown">
+            <summary>Nieznany błąd.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.Success">
+            <summary>Sukces.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadBotUin">
+            <summary>Nieprawidłowy numer bota.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BotUnregisteredOrNotActive">
+            <summary>Bot niezarejestrowany lub nieaktywny na tej maszynie.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.NoMessage">
+            <summary>Brak wiadomości do wysłania.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadToken">
+            <summary>Błędny lub nieważny token.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.NumberOfRecipientsExceeded1000">
+            <summary>Liczba odbiorców wiadomości nie może być większa od 1000.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadRecipientsUins">
+            <summary>Brak poprawnych numerów odbiorców na liście.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.DescriptionWasLongerThan255">
+            <summary>Długość opisu nie może przekraczać 255 bajtów.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadStatusCode">
+            <summary>Wartość statusu musi być prawidłową liczbą.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadResource">
+            <summary>Niepoprawny zasób. Dostępne zasoby: setStatus, sendMessage.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.NotEnoughRequestParametrsShouldBeToMsg">
+            <summary>Za mało parametrów żądania, musi zawierać przynajmniej to oraz msg.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.NotEnoughRequestParametrsShouldStatusDescription">
+            <summary>Za mało parametrów żądania, musi zawierać: status oraz opcjonalnie desc.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadRequest">
+            <summary>Niepoprawne żądanie. Upewnij się, że parametry żądania są w kodowaniu procentowym (Content-Type: application/x-www-form-urlencoded).</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.FailedToSendMessages">
+            <summary>Nie udało się wysłać wiadomości.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.FailedToSetStatus">
+            <summary>Nie udało się ustawić statusu.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.BadContentLengthHeader">
+            <summary>Nieprawidłowy nagłówek Content-Length.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.RequestTooLong">
+            <summary>Długość żądania przekracza dopuszczalny rozmiar.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.RequestHeaderTooLong">
+            <summary>Długość nagłówka przekracza dopuszczalny rozmiar.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.ImageNotFound">
+            <summary>Nie znalazłem obrazka ani w wiadomości protokołowej, ani w pamięci podręcznej.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.HtmlMessageLengthIncompatibleWithHeaderInformation">
+            <summary>Długość wiadomości HTML jest niezgodna z informacją z nagłówka.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.PlainMessageLengthIncompatibleWithHeaderInformation">
+            <summary>Długość wiadomości tekstowej jest niezgodna z informacją z nagłówka.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.PushErrorCode.AnyOfTheStructureFieldsAreTooLong">
+            <summary>Któreś z pól struktury (tekst, html, formatowanie lub obrazek) przekraczają dopuszczalną długość.</summary>
+        </member>
+        <member name="T:SharpGGBotAPI.MessageFormatting">
+            <summary>
+            Flagi formatowania tekstu.
+            </summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.None">
+            <summary>Brak formatowania.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Bold">
+            <summary>Tekst pogrubiony.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Italic">
+            <summary>Tekst pochyły.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Underline">
+            <summary>Tekst podkreślony.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Erasure">
+            <summary>Tekst skreślony.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.NewLine">
+            <summary>Dodaj nową linię na koniec tekstu.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Superscript">
+            <summary>Indeks górny.</summary>
+        </member>
+        <member name="F:SharpGGBotAPI.MessageFormatting.Subscript">
+            <summary>Indeks dolny.</summary>
+        </member>
+        <member name="T:SharpGGBotAPI.MessageEventArgs">
+            <summary>
+            Argumenty dla wiadomości przychodzącej.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.MessageEventArgs.Uin">
+            <summary>
+            Numer z którego wysłano wiadomość.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.MessageEventArgs.Message">
+            <summary>
+            Wiadomość.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.MessageEventArgs.Response">
+            <summary>
+            Twoja odpowiedź na wiadomość.
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.PushRequestResultEventArgs">
+            <summary>
+            Argumenty dla odpowiedzi na zapytanie PUSH.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.HttpErrorCode">
+            <summary>
+            Kod błędu HTTP.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.BotmasterErrorCode">
+            <summary>
+            Kod błędu Botmastera GG.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.BotmasterMessage">
+            <summary>
+            Wiadomość od Botmastera GG.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.OperationType">
+            <summary>
+            Rodzaj operacji.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.ImageHash">
+            <summary>
+            Hash obrazka który wysłaliśmy.
+            Jeśli nie wysyłaliśmy obrazka lub wystąpił błąd to pole będzie puste.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.ImageData">
+            <summary>
+            Dane obrazka.
+            Jeśli nie pobieraliśmy obrazka lub wystąpił błąd to pole będzie puste.
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.PushRequestResultAsyncEventArgs">
+            <summary>
+            Asynchroniczne argumenty dla odpowiedzi na zapytanie PUSH.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.PushRequestResultAsyncEventArgs.#ctor">
+            <summary>
+            Tworzy pusty obiekt.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.PushRequestResultAsyncEventArgs.#ctor(SharpGGBotAPI.PushRequestResultEventArgs)">
+            <summary>
+            Tworzy argumenty z synchronicznego obiektu.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultAsyncEventArgs.UserData">
+            <summary>
+            Dane użytkownika.
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.PushRequestResultAsync">
+            <summary>
+            Delegat który obsługuje asynchroniczne odpowiedzi na zapytania PUSH.
+            </summary>
+            <param name="e">Argumenty - odpowiedź.</param>
+        </member>
+        <member name="T:SharpGGBotAPI.GaduGaduBot">
+            <summary>
+            Klasa która umożliwia obsługę GG Bot API.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.#ctor(System.String,System.String,System.UInt32)">
+            <summary>
+            Skonstruuj GaduGaduBot.
+            </summary>
+            <param name="botApiLogin">Login do Bot API</param>
+            <param name="botApiPassword">Hasło do Bot API</param>
+            <param name="botUin">Numer GG bota</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.#ctor(System.String,System.String,System.UInt32,System.String)">
+            <summary>
+            Skonstruuj GaduGaduBot.
+            </summary>
+            <param name="botApiLogin">Login do Bot API</param>
+            <param name="botApiPassword">Hasło do Bot API</param>
+            <param name="botUin">Numer GG bota</param>
+            <param name="authorizationFile">Plik autoryzacyjny.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.Start(System.Int32,System.Collections.Generic.List{System.Net.IPAddress})">
+            <summary>
+            Wystartuj serwer bota.
+            </summary>
+            <param name="port">Port na którym ma działać bot.</param>
+            <param name="ipFilter">Filtr IP</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.Stop">
+            <summary>
+            Zatrzymj serwer bota.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SetStatus(SharpGGBotAPI.Status,System.String)">
+            <summary>
+            Ustaw status bota.
+            </summary>
+            <param name="status">Status</param>
+            <param name="description">Opis</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SetStatusAsync(SharpGGBotAPI.Status,System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Ustaw status bota asynchronicznie.
+            </summary>
+            <param name="status">Status</param>
+            <param name="description">Opis</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessage(System.UInt32,System.String)">
+            <summary>
+            Wyślij wiadomość do wybranego numeru za pomocą zapytania PUSH.
+            </summary>
+            <param name="recipient">Numer GG odbiorcy</param>
+            <param name="message">Wiadomość</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessage(System.UInt32[],System.String)">
+            <summary>
+            Wyślij wiadomość do wybranych numerów za pomocą zapytania PUSH.
+            </summary>
+            <param name="recipients">Numery GG odbiorców</param>
+            <param name="message">Wiadomość</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessage(System.Collections.Generic.Dictionary{System.UInt32[],System.String})">
+            <summary>
+            Wyślij wybrane wiadomości do wybranych numerów za pomocą zapytania PUSH.
+            W kluczu słownika muszą być zawarte numery GG odbiorców wiadomości zawartej w wartości słownika. 
+            </summary>
+            <param name="messageToRecipients">Słownik</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessageAsync(System.UInt32,System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Wyślij wiadomość do wybranego numeru za pomocą zapytania PUSH asynchronicznie.
+            </summary>
+            <param name="recipient">Numer GG odbiorcy</param>
+            <param name="message">Wiadomość</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessageAsync(System.UInt32[],System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Wyślij wiadomość do wybranych numerów za pomocą zapytania PUSH asynchronicznie.
+            </summary>
+            <param name="recipients">Numery GG odbiorców</param>
+            <param name="message">Wiadomość</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendMessageAsync(System.Collections.Generic.Dictionary{System.UInt32[],System.String},SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Wyślij wybrane wiadomości do wybranych numerów za pomocą zapytania PUSH asynchronicznie.
+            W kluczu słownika muszą być zawarte numery GG odbiorców wiadomości zawartej w wartości słownika. 
+            </summary>
+            <param name="messageToRecipients">Słownik</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendImage(System.Byte[])">
+            <summary>
+            Wyślij obrazek na serwer.
+            </summary>
+            <param name="imageData">Dane obrazka.</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.SendImageAsync(System.Byte[],SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Wyślij obrazek na serwer asynchronicznie.
+            </summary>
+            <param name="imageData">Dane obrazka.</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ExistsImage(System.String)">
+            <summary>
+            Sprawdź czy obrazek istnieje na serwerze.
+            </summary>
+            <param name="hash">Hash obrazka.</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ExistsImageAsync(System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Sprawdź czy obrazek istnieje na serwerze asynchronicznie.
+            </summary>
+            <param name="hash">Hash obrazka.</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.DownloadImage(System.String)">
+            <summary>
+            Pobierz obrazek z serwera.
+            </summary>
+            <param name="hash">Hash obrazka.</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.DownloadImageAsync(System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Pobierz obrazek z serwera asynchronicznie.
+            </summary>
+            <param name="hash">Hash obrazka.</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
+            <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessSetStatus(SharpGGBotAPI.Status,System.String,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o zmianę statusu.
+            </summary>
+            <param name="status">Status</param>
+            <param name="description">Opis</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessSendMessage(System.UInt32[],System.String,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o wysłanie wiadomości.
+            </summary>
+            <param name="recipients">Odbiorcy.</param>
+            <param name="message">Wiadomość</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessSendMessage(System.Collections.Generic.Dictionary{System.UInt32[],System.String},System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o wysłanie wiadomości.
+            </summary>
+            <param name="messageToRecipients">Słownik</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessSendImage(System.Byte[],System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o wysłanie obrazka.
+            </summary>
+            <param name="imageData">Dane obrazka.</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessExistsImage(System.String,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o sprawdzenie czy obrazek istnieje na serwerze.
+            </summary>
+            <param name="hash">Hash obrazka.</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessDownloadImage(System.String,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o pobieranie obrazka.
+            </summary>
+            <param name="hash">Hask obrazka.</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessErrorResponse(System.Net.WebException,System.String,SharpGGBotAPI.PushRequestResultEventArgs)">
+            <summary>
+            Obsłuż błąd serwera.
+            </summary>
+            <param name="e">Wyjątek.</param>
+            <param name="rootElement">Główny element dokumentu XML.</param>
+            <param name="evArgs">Wynik.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.OnStarted">
+            <summary>
+            Kiedy serwer wystartuje.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.OnStopped">
+            <summary>
+            Kiedy serwer się zatrzyma
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.OnMessageReceived(SharpGGBotAPI.MessageEventArgs)">
+            <summary>
+            Kiedy zostanie przysłana wiadomość.
+            </summary>
+            <param name="e">Argumenty</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.OnTokenRequestErrorOccurred">
+            <summary>
+            Kiedy zostanie wyrzucony błąd zapytania o token.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.Dispose">
+            <summary>
+            Zniszcz obiekt bota.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.Dispose(System.Boolean)">
+            <summary>
+            Wyczyść obiekt.
+            </summary>
+            <param name="disposing">Wyczyścić zarządzane zasoby?</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.Finalize">
+            <summary>
+            Destruktor
+            </summary>      
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.AuthorizationFile">
+            <summary>
+            Ścieżka do pliku autoryzacyjnego.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.BotUin">
+            <summary>
+            Numer GG bota.
+            Będzie używany do pobierania tokenu dla operacji PUSH oraz do ich wykonywania.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.BotApiLogin">
+            <summary>
+            Login do Bot API dla danego numeru GG.
+            Będzie używany do pobierania tokenu dla operacji PUSH.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.BotApiPassword">
+            <summary>
+            Hasło do Bot API dla danego numeru GG.
+            Będzie używany do pobierania tokenu dla operacji PUSH.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.IsRunning">
+            <summary>
+            Czy serwer jest uruchomiony?
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.IPFilter">
+            <summary>
+            Filtr IP. Proste zabezpieczenie przeciw nieporządanym zapytaniom.
+            Jeśli wynosi null, wszystkie zapytania zostaną przyjęte.
+            Jeśli nie wynosi null, serwer będzie przyjmował tylko te połączenia, które pochądzą z adresów IP zawartych na tej liście.
+            Standardowe adresy IP botmastera są we właściwości DefaultIPFilter.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.CurrentToken">
+            <summary>
+            Aktualny token.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.CurrentTokenServer">
+            <summary>
+            Aktualny serwer botmastera.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.CurrentTokenServerPort">
+            <summary>
+            Aktualny port serwera botmastera.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.GaduGaduBot.DefaultIPFilter">
+            <summary>
+            Domyślny filtr IP.
+            Zawiera adresy:
+            91.197.15.34
+            </summary>
+        </member>
+        <member name="E:SharpGGBotAPI.GaduGaduBot.Started">
+            <summary>
+            Kiedy serwer wystartuje.
+            </summary>
+        </member>
+        <member name="E:SharpGGBotAPI.GaduGaduBot.Stopped">
+            <summary>
+            Kiedy serwer zatrzymano.
+            </summary>
+        </member>
+        <member name="E:SharpGGBotAPI.GaduGaduBot.MessageReceived">
+            <summary>
+            Kiedy odebrano wiadomość.
+            </summary>
+        </member>
+        <member name="E:SharpGGBotAPI.GaduGaduBot.TokenRequestErrorOccurred">
+            <summary>
+            Kiedy wystąpił błąd przy pobieraniu tokena.
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.ResponseMessage">
+            <summary>
+            Odpowiedź zwrotna na wiadomość przychodzącą.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.ResponseMessage.AppendText(System.String,SharpGGBotAPI.MessageFormatting,System.Byte,System.Byte,System.Byte,System.String,System.String)">
+            <summary>
+            Dopisz tekst (html i zwykły) do wiadomości.
+            Domyślnie bez formatowania, kolor tła i tekstu czarny, czcionka MS Shell Dlg 2 o wielkości 9pt.
+            </summary>
+            <param name="text">Tekst.</param>
+            <param name="formatting">Flagi formatowania.</param>
+            <param name="redColor">Składowa czerwieni koloru tekstu.</param>
+            <param name="greenColor">Składowa zieleni koloru tekstu.</param>
+            <param name="blueColor">Składowa niebieska koloru tekstu.</param>
+            <param name="fontFamily">Nazwa czcionki.</param>
+            <param name="fontSize">Rozmiar czcionki, np. 9pt czyli 9 punktów.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.ResponseMessage.AppendImage(System.String)">
+            <summary>
+            Dodaj obrazek do wiadomości.
+            Obrazek musi być najpierw wysłany na serwer.
+            </summary>
+            <param name="hash">Hash obrazka</param>
+        </member>
+        <member name="M:SharpGGBotAPI.ResponseMessage.AppendImage(System.Int64,System.Int64)">
+            <summary>
+            Dodaj obrazek do wiadomości.
+            Obrazek musi być najpierw wysłany na serwer.
+            </summary>
+            <param name="crc32">Suma kontrolna CRC32.</param>
+            <param name="length">Wielkość obrazka w bajtach.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.ResponseMessage.Send">
+            <summary>
+            Wyślij odpowiedź.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.ResponseMessage.Recipients">
+            <summary>
+            Odbiorcy wiadomości.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.ResponseMessage.PlainMessage">
+            <summary>
+            Wiadomość zapisana czystym tekstem.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.ResponseMessage.HtmlMessage">
+            <summary>
+            Wiadomość zapisana w HTML.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.ResponseMessage.Attributes">
+            <summary>
+            Atrybuty wiadomości zapisanej czystym tekstem.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.ResponseMessage.SendToOffline">
+            <summary>
+            Czy wysyłać wiadomość do niedostępnych klientów?
+            </summary>
+        </member>
+        <member name="T:SharpGGBotAPI.Utils">
+            <summary>
+            Narzędzia pomocnicze.
+            </summary>
+        </member>
+        <member name="M:SharpGGBotAPI.Utils.ComputeCrc32(System.Byte[])">
+            <summary>
+            Oblicza sumę kontrolną CRC32 z podanych danych.
+            </summary>
+            <param name="data">Dane.</param>
+            <returns>Suma kontrolna CRC32.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.Utils.ComputeHash(System.Int64,System.Int64)">
+            <summary>
+            Oblicz hash obrazka.
+            </summary>
+            <param name="crc32">Suma kontrolna CRC32.</param>
+            <param name="length">Wielkość obrazka w bajtach.</param>
+            <returns>Hash obrazka.</returns>
+        </member>
+    </members>
+</doc>
