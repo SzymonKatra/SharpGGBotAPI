@@ -52,6 +52,7 @@ namespace SharpGGBotAPI
         private string _botmasterMessage = string.Empty;
         private PushOperation _operationType = PushOperation.None;
         private string _imageHash = string.Empty;
+        private byte[] _imageData;
 
         /// <summary>
         /// Kod błędu HTTP.
@@ -93,6 +94,15 @@ namespace SharpGGBotAPI
         {
             get { return _imageHash; }
             set { _imageHash = value; }
+        }
+        /// <summary>
+        /// Dane obrazka.
+        /// Jeśli nie pobieraliśmy obrazka lub wystąpił błąd to pole będzie puste.
+        /// </summary>
+        public byte[] ImageData
+        {
+            get { return _imageData; }
+            set { _imageData = value; }
         }
     }
 

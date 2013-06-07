@@ -75,9 +75,9 @@
 //                {
 //                    _queryItems = new List<HttpItem>();
 //                    string[] query = value.Remove(0, queryIndex + 1).Split('&');
-//                    foreach (string item in query)
+//                    foreach (string streamItem in query)
 //                    {
-//                        string[] vals = item.Split('=');
+//                        string[] vals = streamItem.Split('=');
 //                        if (vals.Length == 2)
 //                        {
 //                            _queryItems.Add(new HttpItem() { Name = vals[0], Value = vals[1] });

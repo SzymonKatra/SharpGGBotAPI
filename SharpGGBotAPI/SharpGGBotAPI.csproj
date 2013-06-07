@@ -33,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\SharpGGBotAPI.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HybridDSP.Net">
@@ -51,7 +52,7 @@
     <Compile Include="Container.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EventArgs.cs" />
-    <Compile Include="GGBotAPI.cs" />
+    <Compile Include="GaduGaduBot.cs" />
     <Compile Include="HttpServer.cs" />
     <Compile Include="PushRequestItem.cs" />
     <Compile Include="ResponseMessage.cs" />

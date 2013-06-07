@@ -227,8 +227,8 @@ namespace SharpGGBotAPI
                 {
                     //flag
                     writer.Write(Container.BOTAPI_ATTRIBUTES_FLAG);
-                    //length
-                    writer.Write((short)_plainMessage.Length);
+                    //position
+                    writer.Write((short)(_plainMessage.Length - text.Length));
                     //flags, bold etc.
                     writer.Write((byte)((formatting.HasFlag(MessageFormatting.Bold) ? Container.BOTAPI_ATTRIBUTES_BOLD : 0) |
                         (formatting.HasFlag(MessageFormatting.Italic) ? Container.BOTAPI_ATTRIBUTES_ITALIC : 0) |
@@ -295,7 +295,7 @@ namespace SharpGGBotAPI
                 {
                     //flag
                     writer.Write(Container.BOTAPI_ATTRIBUTES_FLAG);
-                    //length
+                    //position
                     writer.Write((short)_plainMessage.Length);
                     writer.Write(Container.BOTAPI_ATTRIBUTES_IMAGE);
                     writer.Write(Container.BOTAPI_IMAGE_CONST_FIRST);
