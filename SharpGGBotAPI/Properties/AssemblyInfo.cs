@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("SharpGGBotAPI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription(".NET implementation of GaduGadu Bot API")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("SharpGGBotAPI")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCopyright("Szymon Katra")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
