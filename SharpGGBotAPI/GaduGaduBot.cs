@@ -140,29 +140,32 @@ namespace SharpGGBotAPI
         /// <summary>
         /// Domyślny filtr IP.
         /// Zawiera adresy:
-        /// 91.197.1[2 - 5].[0 - 9]
-        /// 91.214.23[6 - 9].[0 - 9]
+        /// 91.197.15.34
         /// </summary>
         public static List<IPAddress> DefaultIPFilter
         {
             get
             {
-                //php regex: '/91\.((197\.1[2-5])|(214\.23[6-9]))\.[0-9]{1,3}/'
                 List<IPAddress> filter = new List<IPAddress>();
-                for (int third = 2; third <= 5; ++third)
-                {
-                    for (int fourth = 0; fourth <= 9; ++fourth)
-                    {
-                        filter.Add(IPAddress.Parse(string.Format("91.197.1{0}.{1}", third, fourth)));
-                    }
-                }
-                for (int third = 6; third <= 9; ++third)
-                {
-                    for (int fourth = 0; fourth <= 9; ++fourth)
-                    {
-                        filter.Add(IPAddress.Parse(string.Format("91.214.23{0}.{1}", third, fourth)));
-                    }
-                }
+                filter.Add(IPAddress.Parse("91.197.15.34"));
+
+                //91.197.1[2 - 5].[0 - 9]
+                //91.214.23[6 - 9].[0 - 9]
+                //php regex: '/91\.((197\.1[2-5])|(214\.23[6-9]))\.[0-9]{1,3}/'
+                //for (int third = 2; third <= 5; ++third)
+                //{
+                //    for (int fourth = 0; fourth <= 9; ++fourth)
+                //    {
+                //        filter.Add(IPAddress.Parse(string.Format("91.197.1{0}.{1}", third, fourth)));
+                //    }
+                //}
+                //for (int third = 6; third <= 9; ++third)
+                //{
+                //    for (int fourth = 0; fourth <= 9; ++fourth)
+                //    {
+                //        filter.Add(IPAddress.Parse(string.Format("91.214.23{0}.{1}", third, fourth)));
+                //    }
+                //}
                 return filter;
             }
         }

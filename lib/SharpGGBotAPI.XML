@@ -592,8 +592,7 @@
             <summary>
             Domyślny filtr IP.
             Zawiera adresy:
-            91.197.1[2 - 5].[0 - 9]
-            91.214.23[6 - 9].[0 - 9]
+            91.197.15.34
             </summary>
         </member>
         <member name="E:SharpGGBotAPI.GaduGaduBot.Started">
