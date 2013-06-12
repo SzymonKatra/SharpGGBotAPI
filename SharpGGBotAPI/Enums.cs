@@ -54,6 +54,8 @@ namespace SharpGGBotAPI
         ImageExists = 4,
         /// <summary>Pobranie obrazka z serwera.</summary>
         ImageDownload = 5,
+        /// <summary>Sprawdzenie czy dany numer jest botem.</summary>
+        IsBot = 6,
     }
 
     /// <summary>

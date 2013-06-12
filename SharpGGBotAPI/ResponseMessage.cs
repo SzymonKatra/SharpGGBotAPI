@@ -8,85 +8,6 @@ using System.IO;
 
 namespace SharpGGBotAPI
 {
-    ///// <summary>
-    ///// Struktura obrazka GG Bot API
-    ///// </summary>
-    //public class ImageStructure
-    //{
-    //    #region Properties
-    //    private long _crc32 = 0;
-    //    private long _length = -1;
-    //    private byte[] _data = null;
-
-    //    /// <summary>
-    //    /// Suma kontrolna CRC32 obrazka.
-    //    /// </summary>
-    //    public long CRC32
-    //    {
-    //        get { return _crc32; }
-    //        set { _crc32 = value; }
-    //    }
-    //    /// <summary>
-    //    /// Wielkość obrazka w bajtach. Jeśli wynosi -1, wielkość zostanie pobrana z właściwości Data.
-    //    /// </summary>
-    //    public long Length
-    //    {
-    //        get { return (_length < 0 && _data != null ? _data.LongLength : 0); }
-    //        set { _length = value; }
-    //    }
-    //    /// <summary>
-    //    /// Obrazek.
-    //    /// </summary>
-    //    public byte[] Data
-    //    {
-    //        get { return _data; }
-    //        set { _data = value; }
-    //    }
-    //    #endregion
-
-    //    #region Constructor
-    //    /// <summary>
-    //    /// Stwórz pustą struktrurę obrazka.
-    //    /// </summary>
-    //    public ImageStructure()
-    //    {
-    //    }
-    //    /// <summary>
-    //    /// Stwórz strukturę obrazka i oblicz sumę kontrolną CRC32 jeśli flaga computeCrc32 zostanie ustawiona na true.
-    //    /// </summary>
-    //    /// <param name="data">Dane obrazka.</param>
-    //    /// <param name="computeCrc32">Obliczyć od razu sumę kontrolną CRC32?</param>
-    //    public ImageStructure(byte[] data, bool computeCrc32 = true)
-    //    {
-    //        _data = data;
-    //        ComputeCrc32FromData();
-    //    }
-    //    /// <summary>
-    //    /// Stwórz strukturę obrazka. Botmaster sprawdzi czy taki obrazek istnieje na serwerze i jeśli tak, roześle go.
-    //    /// </summary>
-    //    /// <param name="crc32">Suma kontrolna CRC32.</param>
-    //    /// <param name="length">Wielkość obrazka w bajtach.</param>
-    //    public ImageStructure(long crc32, long length)
-    //    {
-    //        _crc32 = crc32;
-    //        _length = length;
-    //    }
-    //    #endregion
-
-    //    #region Methods
-    //    /// <summary>
-    //    /// Oblicz sumę kontrolną CRC32 z obrazka zapisanego w właściwości Data.
-    //    /// </summary>
-    //    public void ComputeCrc32FromData()
-    //    {
-    //        if (_data == null) throw new NullReferenceException("Data is null");
-    //        _crc32 = Crc32.ComputeChecksum(_data);
-    //    }
-
-        
-    //    #endregion
-    //}
-
     /// <summary>
     /// Odpowiedź zwrotna na wiadomość przychodzącą.
     /// </summary>
@@ -263,13 +184,10 @@ namespace SharpGGBotAPI
         /// <param name="hash">Hash obrazka</param>
         public void AppendImage(string hash)
         {
-            try
-            {
-                if (hash.Length != 16) throw new InvalidOperationException("Bad hash length");
-
-                AppendImage(Convert.ToInt64(hash.Remove(8), 16), Convert.ToInt64(hash.Remove(0, 8), 16));
-            }
-            catch { throw new InvalidOperationException("Bad hash"); }
+            uint crc32;
+            uint len;
+            Utils.ParseImageHash(hash, out crc32, out len);
+            AppendImage(crc32, len);
         }
         /// <summary>
         /// Dodaj obrazek do wiadomości.
@@ -277,7 +195,7 @@ namespace SharpGGBotAPI
         /// </summary>
         /// <param name="crc32">Suma kontrolna CRC32.</param>
         /// <param name="length">Wielkość obrazka w bajtach.</param>
-        public void AppendImage(long crc32, long length)
+        public void AppendImage(uint crc32, uint length)
         {
             #region Html
             //open html message if closed

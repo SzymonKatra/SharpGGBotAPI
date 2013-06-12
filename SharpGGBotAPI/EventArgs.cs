@@ -51,6 +51,7 @@ namespace SharpGGBotAPI
         private PushErrorCode _botmasterErrorCode = 0;
         private string _botmasterMessage = string.Empty;
         private PushOperation _operationType = PushOperation.None;
+        private int _botmasterResult = -1;
         private string _imageHash = string.Empty;
         private byte[] _imageData;
 
@@ -85,6 +86,14 @@ namespace SharpGGBotAPI
         {
             get { return _operationType; }
             set { _operationType = value; }
+        }
+        /// <summary>
+        /// Wynik zwrócony przez Botmastera GG.
+        /// </summary>
+        public int BotmasterResult
+        {
+            get { return _botmasterResult; }
+            set { _botmasterResult = value; }
         }
         /// <summary>
         /// Hash obrazka który wysłaliśmy.

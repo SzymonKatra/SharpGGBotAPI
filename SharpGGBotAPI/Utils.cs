@@ -69,9 +69,28 @@ namespace SharpGGBotAPI
         /// <param name="crc32">Suma kontrolna CRC32.</param>
         /// <param name="length">Wielkość obrazka w bajtach.</param>
         /// <returns>Hash obrazka.</returns>
-        public static string ComputeHash(long crc32, long length)
+        public static string ComputeHash(uint crc32, uint length)
         {
             return crc32.ToString("X8") + length.ToString("X8");
+        }
+        /// <summary>
+        /// Parsuj hash obrazka.
+        /// </summary>
+        /// <param name="hash">Hash.</param>
+        /// <param name="crc32">Suma kontrolna CRC32.</param>
+        /// <param name="length">Wielkość obrazka w bajtach.</param>
+        public static void ParseImageHash(string hash, out uint crc32, out uint length)
+        {
+            crc32 = 0;
+            length = 0;
+            try
+            {
+                if (hash.Length != 16) throw new InvalidOperationException("Bad hash length");
+
+                crc32 = Convert.ToUInt32(hash.Remove(8), 16);
+                length = Convert.ToUInt32(hash.Remove(0, 8), 16);
+            }
+            catch { throw new InvalidOperationException("Bad hash"); }
         }
 
         internal static uint ToInternalStatus(Status status, bool description)

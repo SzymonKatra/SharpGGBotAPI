@@ -140,14 +140,29 @@ namespace SharpGGBotAPI
         /// <summary>
         /// Domyślny filtr IP.
         /// Zawiera adresy:
-        /// 91.197.15.34
+        /// 91.197.1[2 - 5].[0 - 9]
+        /// 91.214.23[6 - 9].[0 - 9]
         /// </summary>
-        public List<IPAddress> DefaultIPFilter
+        public static List<IPAddress> DefaultIPFilter
         {
             get
             {
+                //php regex: '/91\.((197\.1[2-5])|(214\.23[6-9]))\.[0-9]{1,3}/'
                 List<IPAddress> filter = new List<IPAddress>();
-                filter.Add(IPAddress.Parse("91.197.15.34"));
+                for (int third = 2; third <= 5; ++third)
+                {
+                    for (int fourth = 0; fourth <= 9; ++fourth)
+                    {
+                        filter.Add(IPAddress.Parse(string.Format("91.197.1{0}.{1}", third, fourth)));
+                    }
+                }
+                for (int third = 6; third <= 9; ++third)
+                {
+                    for (int fourth = 0; fourth <= 9; ++fourth)
+                    {
+                        filter.Add(IPAddress.Parse(string.Format("91.214.23{0}.{1}", third, fourth)));
+                    }
+                }
                 return filter;
             }
         }
@@ -366,6 +381,7 @@ namespace SharpGGBotAPI
         #region ExistsImage
         /// <summary>
         /// Sprawdź czy obrazek istnieje na serwerze.
+        /// Jeśli obrazek istnieje to pole BotmasterResult będzie równe 0.
         /// </summary>
         /// <param name="hash">Hash obrazka.</param>
         /// <returns>Wynik.</returns>
@@ -380,6 +396,7 @@ namespace SharpGGBotAPI
 
         /// <summary>
         /// Sprawdź czy obrazek istnieje na serwerze asynchronicznie.
+        /// Jeśli obrazek istnieje to pole BotmasterResult będzie równe 0.
         /// </summary>
         /// <param name="hash">Hash obrazka.</param>
         /// <param name="callback">Metoda zwrotna.</param>
@@ -411,10 +428,38 @@ namespace SharpGGBotAPI
         /// <param name="hash">Hash obrazka.</param>
         /// <param name="callback">Metoda zwrotna.</param>
         /// <param name="userData">Dane użytkownika.</param>
-        /// <returns>Wynik.</returns>
         public void DownloadImageAsync(string hash, PushRequestResultAsync callback, object userData)
         {
             ProcessDownloadImage(hash, null, callback, userData);
+        }
+        #endregion
+
+        #region IsBot
+        /// <summary>
+        /// Sprawdza czy dany numer jest botem.
+        /// Jeżeli pole BotmasterResult będzie równe 1 to numer jest botem. Jeśli 0 to numer nie jest botem.
+        /// </summary>
+        /// <param name="uin">Numer do sprawdzenia.</param>
+        /// <returns>Wynik.</returns>
+        public PushRequestResultEventArgs IsBot(uint uin)
+        {
+            ManualResetEvent locker = new ManualResetEvent(false);
+            ProcessIsBot(uin, locker, null, null);
+            locker.WaitOne();
+            locker.Close();
+            return _currentPushResponse;
+        }
+
+        /// <summary>
+        /// Sprawdza czy dany numer jest botem asynchronicznie.
+        /// Jeżeli pole BotmasterResult będzie równe 1 to numer jest botem. Jeśli 0 to numer nie jest botem.
+        /// </summary>
+        /// <param name="uin">Numer do sprawdzenia.</param>
+        /// <param name="callback">Metoda zwrotna.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        public void IsBot(uint uin, PushRequestResultAsync callback, object userData)
+        {
+            ProcessIsBot(uin, null, callback, userData);
         }
         #endregion
         #endregion
@@ -556,6 +601,7 @@ namespace SharpGGBotAPI
                     case PushOperation.ImageSend: ProcessSendImageResponse(bodyStream, evArgs); break;
                     case PushOperation.ImageExists: ProcessExistsImageResponse(bodyStream, evArgs); break;
                     case PushOperation.ImageDownload: ProcessDownloadImageResponse(bodyStream, evArgs); break;
+                    case PushOperation.IsBot: ProcessIsBotResponse(bodyStream, evArgs); break;
                 }
 
                 bodyStream.Close();
@@ -571,12 +617,12 @@ namespace SharpGGBotAPI
             #region ReturningResults
             if (item != null)
             {
-                if (item.Callback == null) //synchronized
+                if (item.Locker != null) //synchronized
                 {
                     _currentPushResponse = evArgs;
                     item.Locker.Set();
                 }
-                else //async
+                else if (item.Callback != null)  //async
                 {
                     item.Callback(new PushRequestResultAsyncEventArgs(evArgs) { UserData = item.UserData });
                 }
@@ -736,7 +782,7 @@ namespace SharpGGBotAPI
                 try
                 {
                     e.ImageHash = current.SelectSingleNode("hash").Value;
-                    e.BotmasterErrorCode = (PushErrorCode)int.Parse(current.SelectSingleNode("status").Value);
+                    e.BotmasterResult = int.Parse(current.SelectSingleNode("status").Value);
                 }
                 catch { }
             }
@@ -774,7 +820,7 @@ namespace SharpGGBotAPI
             {
                 try
                 {
-                    e.BotmasterErrorCode = (PushErrorCode)int.Parse(current.SelectSingleNode("status").Value);
+                    e.BotmasterResult = int.Parse(current.SelectSingleNode("status").Value);
                 }
                 catch { }
             }
@@ -812,6 +858,46 @@ namespace SharpGGBotAPI
                 Buffer.BlockCopy(buffer, 0, img, img.Length - len, len);
             }
             e.ImageData = img;
+        }
+        #endregion
+        #region ProcessIsBot
+        /// <summary>
+        /// Obsłuż zapytanie o pytanie czy dany numer jest botem.
+        /// </summary>
+        /// <param name="uin">Numer do sprawdzenia.</param>
+        /// <param name="locker">Blokada dla operacji synchronicznej.</param>
+        /// <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+        /// <param name="userData">Dane użytkownika.</param>
+        protected void ProcessIsBot(uint uin, ManualResetEvent locker, PushRequestResultAsync callback, object userData)
+        {
+            PushRequestItem item = new PushRequestItem();
+            item.Uri = Container.BOTAPI_BOTMASTER_RESOURCE_IS_BOT + _botUin;
+
+            string data = "check_ggid=" + System.Web.HttpUtility.UrlEncode(uin.ToString());
+
+            item.Data = Encoding.UTF8.GetBytes(data);
+            item.OperationType = PushOperation.IsBot;
+            item.Locker = locker;
+            item.Callback = callback;
+            item.UserData = userData;
+            item.UseMainServer = true;
+
+            EnqueuePushRequest(item);
+        }
+        private void ProcessIsBotResponse(Stream bodyStream, PushRequestResultEventArgs e)
+        {
+            XPathDocument doc = new XPathDocument(bodyStream);
+            XPathNavigator docNavigator = doc.CreateNavigator();
+            XPathNodeIterator docIterator = docNavigator.Select("/result");
+
+            foreach (XPathNavigator current in docIterator)
+            {
+                try
+                {
+                    e.BotmasterResult = int.Parse(current.SelectSingleNode("status").Value);
+                }
+                catch { }
+            }
         }
         #endregion
 

@@ -67,6 +67,9 @@
         <member name="F:SharpGGBotAPI.PushOperation.ImageDownload">
             <summary>Pobranie obrazka z serwera.</summary>
         </member>
+        <member name="F:SharpGGBotAPI.PushOperation.IsBot">
+            <summary>Sprawdzenie czy dany numer jest botem.</summary>
+        </member>
         <member name="T:SharpGGBotAPI.PushErrorCode">
             <summary>
             Kody błędów wiadomości PUSH.
@@ -213,6 +216,11 @@
         <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.OperationType">
             <summary>
             Rodzaj operacji.
+            </summary>
+        </member>
+        <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.BotmasterResult">
+            <summary>
+            Wynik zwrócony przez Botmastera GG.
             </summary>
         </member>
         <member name="P:SharpGGBotAPI.PushRequestResultEventArgs.ImageHash">
@@ -373,6 +381,7 @@
         <member name="M:SharpGGBotAPI.GaduGaduBot.ExistsImage(System.String)">
             <summary>
             Sprawdź czy obrazek istnieje na serwerze.
+            Jeśli obrazek istnieje to pole BotmasterResult będzie równe 0.
             </summary>
             <param name="hash">Hash obrazka.</param>
             <returns>Wynik.</returns>
@@ -380,6 +389,7 @@
         <member name="M:SharpGGBotAPI.GaduGaduBot.ExistsImageAsync(System.String,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
             <summary>
             Sprawdź czy obrazek istnieje na serwerze asynchronicznie.
+            Jeśli obrazek istnieje to pole BotmasterResult będzie równe 0.
             </summary>
             <param name="hash">Hash obrazka.</param>
             <param name="callback">Metoda zwrotna.</param>
@@ -399,7 +409,23 @@
             <param name="hash">Hash obrazka.</param>
             <param name="callback">Metoda zwrotna.</param>
             <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.IsBot(System.UInt32)">
+            <summary>
+            Sprawdza czy dany numer jest botem.
+            Jeżeli pole BotmasterResult będzie równe 1 to numer jest botem. Jeśli 0 to numer nie jest botem.
+            </summary>
+            <param name="uin">Numer do sprawdzenia.</param>
             <returns>Wynik.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.IsBot(System.UInt32,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Sprawdza czy dany numer jest botem asynchronicznie.
+            Jeżeli pole BotmasterResult będzie równe 1 to numer jest botem. Jeśli 0 to numer nie jest botem.
+            </summary>
+            <param name="uin">Numer do sprawdzenia.</param>
+            <param name="callback">Metoda zwrotna.</param>
+            <param name="userData">Dane użytkownika.</param>
         </member>
         <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessSetStatus(SharpGGBotAPI.Status,System.String,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
             <summary>
@@ -453,6 +479,15 @@
             Obsłuż zapytanie o pobieranie obrazka.
             </summary>
             <param name="hash">Hask obrazka.</param>
+            <param name="locker">Blokada dla operacji synchronicznej.</param>
+            <param name="callback">Zwrot dla operacji asynchronicznej.</param>
+            <param name="userData">Dane użytkownika.</param>
+        </member>
+        <member name="M:SharpGGBotAPI.GaduGaduBot.ProcessIsBot(System.UInt32,System.Threading.ManualResetEvent,SharpGGBotAPI.PushRequestResultAsync,System.Object)">
+            <summary>
+            Obsłuż zapytanie o pytanie czy dany numer jest botem.
+            </summary>
+            <param name="uin">Numer do sprawdzenia.</param>
             <param name="locker">Blokada dla operacji synchronicznej.</param>
             <param name="callback">Zwrot dla operacji asynchronicznej.</param>
             <param name="userData">Dane użytkownika.</param>
@@ -557,7 +592,8 @@
             <summary>
             Domyślny filtr IP.
             Zawiera adresy:
-            91.197.15.34
+            91.197.1[2 - 5].[0 - 9]
+            91.214.23[6 - 9].[0 - 9]
             </summary>
         </member>
         <member name="E:SharpGGBotAPI.GaduGaduBot.Started">
@@ -605,7 +641,7 @@
             </summary>
             <param name="hash">Hash obrazka</param>
         </member>
-        <member name="M:SharpGGBotAPI.ResponseMessage.AppendImage(System.Int64,System.Int64)">
+        <member name="M:SharpGGBotAPI.ResponseMessage.AppendImage(System.UInt32,System.UInt32)">
             <summary>
             Dodaj obrazek do wiadomości.
             Obrazek musi być najpierw wysłany na serwer.
@@ -655,13 +691,21 @@
             <param name="data">Dane.</param>
             <returns>Suma kontrolna CRC32.</returns>
         </member>
-        <member name="M:SharpGGBotAPI.Utils.ComputeHash(System.Int64,System.Int64)">
+        <member name="M:SharpGGBotAPI.Utils.ComputeHash(System.UInt32,System.UInt32)">
             <summary>
             Oblicz hash obrazka.
             </summary>
             <param name="crc32">Suma kontrolna CRC32.</param>
             <param name="length">Wielkość obrazka w bajtach.</param>
             <returns>Hash obrazka.</returns>
+        </member>
+        <member name="M:SharpGGBotAPI.Utils.ParseImageHash(System.String,System.UInt32@,System.UInt32@)">
+            <summary>
+            Parsuj hash obrazka.
+            </summary>
+            <param name="hash">Hash.</param>
+            <param name="crc32">Suma kontrolna CRC32.</param>
+            <param name="length">Wielkość obrazka w bajtach.</param>
         </member>
     </members>
 </doc>

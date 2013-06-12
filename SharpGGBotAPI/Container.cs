@@ -28,6 +28,7 @@ namespace SharpGGBotAPI
         public const string BOTAPI_BOTMASTER_RESOURCE_PUT_IMAGE = "/putImage/";
         public const string BOTAPI_BOTMASTER_RESOURCE_EXISTS_IMAGE = "/existsImage/";
         public const string BOTAPI_BOTMASTER_RESOURCE_GET_IMAGE = "/getImage/";
+        public const string BOTAPI_BOTMASTER_RESOURCE_IS_BOT = "/isBot/";
         public const string BOTAPI_REQUEST_USER_AGENT = "SharpGGBotAPI";
 
         public const byte BOTAPI_ATTRIBUTES_FLAG = 0x02;
