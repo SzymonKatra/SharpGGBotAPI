@@ -1,4 +1,4 @@
 ﻿SharpGGBotAPI
 ======
 
-Biblioteka do obsługi GG Bot API w C# poprzez zapytania HTTP.
+Implementacja [GG Bot API](https://boty.gg.pl/) w C#.
